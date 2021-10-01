@@ -1,0 +1,24 @@
+{
+  "name": "alessandro_podo/restclient",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Alessandro Podo",
+      "email": "coden@mitsandro.de"
+    }
+  ],
+  "require": {
+    "php": "8.*",
+    "symfony/serializer": "^5.3",
+    "symfony/var-exporter": "^5.3",
+    "symfony/http-client": "^5.3",
+    "phpunit/phpunit": "^9.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "RestClient\\": "src/"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="0468a076-fb34-42bf-a203-08872185e5ba" name="netw-tools-dev">
+        <fileTransfer rootFolder="/var/www/html/RestClient" accessType="SFTP" host="netw-tools-dev.srv.lrz.de" port="22" sshConfigId="fe4d0fe4-2b0f-4734-a27d-fce3195abafa" sshConfig="srvadm@netw-tools-dev.srv.lrz.de:22 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

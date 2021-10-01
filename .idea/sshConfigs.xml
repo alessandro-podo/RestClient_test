@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="OPEN_SSH" host="netw-tools-dev.srv.lrz.de" id="fe4d0fe4-2b0f-4734-a27d-fce3195abafa" port="22" nameFormat="DESCRIPTIVE" username="srvadm" />
+    </configs>
+  </component>
+</project>
