@@ -3,6 +3,7 @@
   "description": "description",
   "minimum-stability": "stable",
   "license": "proprietary",
+  "type": "symfony-bundle",
   "authors": [
     {
       "name": "Alessandro Podo",
@@ -14,11 +15,20 @@
     "symfony/serializer": "^5.3",
     "symfony/var-exporter": "^5.3",
     "symfony/http-client": "^5.3",
-    "phpunit/phpunit": "^9.5"
+    "phpunit/phpunit": "^9.5",
+    "symfony/validator": "^5.3",
+    "doctrine/annotations": "^1.13",
+    "symfony/cache": "^5.3"
   },
   "autoload": {
     "psr-4": {
       "RestClient\\": "src/"
     }
+  },
+  "require-dev": {
+    "symfony/dependency-injection": "^5.3",
+    "symfony/config": "^5.3",
+    "symfony/http-kernel": "^5.3",
+    "symfony/yaml": "^5.3"
   }
 }
