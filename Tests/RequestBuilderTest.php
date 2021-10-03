@@ -207,8 +207,4 @@ class RequestBuilderTest extends TestCase
         ];
 
     }
-
-
-
-    //Urls via Refelection Prüfen oder function zum validieren herrefactorn
 }
