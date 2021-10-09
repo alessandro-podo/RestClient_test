@@ -1,7 +1,7 @@
 services:
   request.builder:
     class: RestClient\RequestBuilder
+    arguments:
+      $parameterBag: '@parameter_bag'
 
   RestClient\RequestBuilderInterface: '@request.builder'
-
-  RestClient\RequestBuilder: ~

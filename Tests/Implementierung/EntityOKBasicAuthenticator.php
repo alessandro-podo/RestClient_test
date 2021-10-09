@@ -1,16 +1,16 @@
 <?php
+namespace RestClientTests\Implementierung;
 
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use RestClient\Attribute\Url;
 use RestClient\Authentication\BasicAuthenticator;
-use RestClient\Authentication\TokenAuthenticator;
-use \Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[HttpMethod(HttpMethod::GET)]
 #[Url('https://google.de')]
-#[TokenAuthenticator('api','jjjjj')]
-class EntityOKTokenAuthenticator
+#[BasicAuthenticator('api', 'jjjjj')]
+class EntityOKBasicAuthenticator
 {
 
     #[Assert\NotBlank()]
@@ -41,7 +41,6 @@ class EntityOKTokenAuthenticator
         $this->display = $display;
         return $this;
     }
-
 
 
 }

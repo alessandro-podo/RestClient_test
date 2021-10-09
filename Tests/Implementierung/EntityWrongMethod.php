@@ -1,15 +1,16 @@
 <?php
+namespace RestClientTests\Implementierung;
 
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use RestClient\Attribute\Url;
 use RestClient\Authentication\TokenAuthenticator;
-use \Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints as Assert;
 
-
+#[HttpMethod('GETS')]
 #[Url('https://google.de')]
-#[TokenAuthenticator('api','jjjjj')]
-class EntityMissingMethod
+#[TokenAuthenticator('api', 'jjjjj')]
+class EntityWrongMethod
 {
 
     #[Assert\NotBlank()]
@@ -40,7 +41,6 @@ class EntityMissingMethod
         $this->display = $display;
         return $this;
     }
-
 
 
 }

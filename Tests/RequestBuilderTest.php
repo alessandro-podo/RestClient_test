@@ -1,18 +1,19 @@
 <?php
 
-namespace RestClient;
+namespace RestClientTests;
 
-use EntityMissingAuthenticator;
-use EntityMissingMethod;
-use EntityOKBasicAuthenticator;
-use EntityOKTokenAuthenticator;
-use EntityWrongMethod;
 use PHPUnit\Framework\TestCase;
 use RestClient\Authentication\TokenAuthenticator;
 use RestClient\Exceptions\ConstraintViolation;
 use RestClient\Exceptions\MissingParameter;
 use RestClient\Exceptions\OverrideExistingParameter;
 use RestClient\Exceptions\WrongParameter;
+use RestClient\RequestBuilder;
+use RestClientTests\Implementierung\EntityMissingAuthenticator;
+use RestClientTests\Implementierung\EntityMissingMethod;
+use RestClientTests\Implementierung\EntityOKBasicAuthenticator;
+use RestClientTests\Implementierung\EntityOKTokenAuthenticator;
+use RestClientTests\Implementierung\EntityWrongMethod;
 
 class RequestBuilderTest extends TestCase
 {
@@ -20,8 +21,8 @@ class RequestBuilderTest extends TestCase
     public function testAddHeaderOKTrue()
     {
         //header hinzufügen und überschreiben + ohne parameter
-        $requestBuilder = (new RequestBuilder())->addHeader('field1','value1');
-        $this->assertInstanceOf(RequestBuilder::class,$requestBuilder);
+        $requestBuilder = (new RequestBuilder())->addHeader('field1', 'value1');
+        $this->assertInstanceOf(RequestBuilder::class, $requestBuilder);
     }
     public function testAddHeaderOKFalse()
     {
@@ -88,13 +89,6 @@ class RequestBuilderTest extends TestCase
 
     public function entities()
     {
-        require_once "Implementierung/EntityOKTokenAuthenticator.php";
-        require_once "Implementierung/EntityOKBasicAuthenticator.php";
-        require_once "Implementierung/EntityMissingAuthenticator.php";
-        require_once "Implementierung/EntityWrongMethod.php";
-        require_once "Implementierung/EntityMissingMethod.php";
-
-
         return[
             "EntityMissingId" => [
                 "Entity"=> new EntityOKTokenAuthenticator(),

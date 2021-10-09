@@ -13,6 +13,7 @@ use RestClient\Exceptions\MissingParameter;
 use RestClient\Exceptions\OverrideExistingParameter;
 use RestClient\Exceptions\WrongParameter;
 use RestClient\Interfaces\Authenticator;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Constraints\Url as ConstraintsUrl;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\RecursiveValidator;
@@ -32,14 +33,14 @@ class RequestBuilder implements RequestBuilderInterface
     private array $possibleTypes = [];
     private ValidatorInterface|RecursiveValidator $validator;
 
-    public function __construct()
+    public function __construct(ParameterBagInterface $parameterBag)
     {
         $this->validator = Validation::createValidatorBuilder()
             ->enableAnnotationMapping(true)
             ->addDefaultDoctrineAnnotationReader()
             ->getValidator();
 
-        $this->possibleTypes= (new \ReflectionClass(Type::class))->getConstants();
+        $this->possibleTypes = (new \ReflectionClass(Type::class))->getConstants();
         $this->possibleHttpMethods = (new \ReflectionClass(HttpMethod::class))->getConstants();
     }
 
