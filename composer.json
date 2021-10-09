@@ -1,9 +1,15 @@
 {
   "name": "alessandro_podo/restclient",
-  "description": "description",
+  "description": "A RestClient for Symfony",
   "minimum-stability": "stable",
   "license": "proprietary",
   "type": "symfony-bundle",
+  "keywords": [
+    "api",
+    "rest",
+    "restclient"
+  ],
+  "homepage": "https://coden.mitsandro.de",
   "authors": [
     {
       "name": "Alessandro Podo",

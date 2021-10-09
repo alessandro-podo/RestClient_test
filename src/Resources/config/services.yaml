@@ -1,0 +1,7 @@
+services:
+  request.builder:
+    class: RestClient\RequestBuilder
+
+  RestClient\RequestBuilderInterface: '@request.builder'
+
+  RestClient\RequestBuilder: ~

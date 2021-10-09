@@ -13,15 +13,15 @@ use RestClient\Exceptions\MissingParameter;
 use RestClient\Exceptions\OverrideExistingParameter;
 use RestClient\Exceptions\WrongParameter;
 use RestClient\Interfaces\Authenticator;
+use Symfony\Component\Validator\Constraints\Url as ConstraintsUrl;
 use Symfony\Component\Validator\Validation;
-use \Symfony\Component\Validator\Constraints\Url as ConstraintsUrl;
 use Symfony\Component\Validator\Validator\RecursiveValidator;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class RequestBuilder
+class RequestBuilder implements RequestBuilderInterface
 {
     private Authenticator $authentication;
-    private Object $entity;
+    private object $entity;
     private array $headers = [];
     private array $query = [];
     private array $json = [];
