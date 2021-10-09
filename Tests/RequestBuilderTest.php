@@ -14,33 +14,38 @@ use RestClientTests\Implementierung\EntityMissingMethod;
 use RestClientTests\Implementierung\EntityOKBasicAuthenticator;
 use RestClientTests\Implementierung\EntityOKTokenAuthenticator;
 use RestClientTests\Implementierung\EntityWrongMethod;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 
 class RequestBuilderTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $this->parameterBag = $this->getMockBuilder(ParameterBag::class)->getMock();
+    }
 
     public function testAddHeaderOKTrue()
     {
         //header hinzufügen und überschreiben + ohne parameter
-        $requestBuilder = (new RequestBuilder())->addHeader('field1', 'value1');
+        $requestBuilder = (new RequestBuilder($this->parameterBag))->addHeader('field1', 'value1');
         $this->assertInstanceOf(RequestBuilder::class, $requestBuilder);
     }
     public function testAddHeaderOKFalse()
     {
-        $requestBuilder = (new RequestBuilder())->addHeader('field1','value1',false);
-        $this->assertInstanceOf(RequestBuilder::class,$requestBuilder);
+        $requestBuilder = (new RequestBuilder($this->parameterBag))->addHeader('field1', 'value1', false);
+        $this->assertInstanceOf(RequestBuilder::class, $requestBuilder);
     }
 
     public function testAddHeaderOKOverride()
     {
-        $requestBuilder = (new RequestBuilder())->addHeader('field1','value1',false);
-        $requestBuilder->addHeader('field1','value1',false);
+        $requestBuilder = (new RequestBuilder($this->parameterBag))->addHeader('field1', 'value1', false);
+        $requestBuilder->addHeader('field1', 'value1', false);
         $this->assertInstanceOf(RequestBuilder::class,$requestBuilder);
     }
     public function testAddHeaderExceptionOverride()
     {
         $this->expectException(OverrideExistingParameter::class);
-        $requestBuilder = (new RequestBuilder())->addHeader('field1','value1');
-        $requestBuilder->addHeader('field1','value1');
+        $requestBuilder = (new RequestBuilder($this->parameterBag))->addHeader('field1', 'value1');
+        $requestBuilder->addHeader('field1', 'value1');
 
     }
 
@@ -53,7 +58,7 @@ class RequestBuilderTest extends TestCase
             $this->expectException($assertion);
         }
 
-        $requestBuilder = new RequestBuilder();
+        $requestBuilder = new RequestBuilder($this->parameterBag);
 
         //Entity
         if($entity !== null){
