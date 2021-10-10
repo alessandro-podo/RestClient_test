@@ -204,9 +204,6 @@ class RequestBuilder implements RequestBuilderInterface
         if ($this->getHttpMethodFromHttpAttribute() !== null) {
             $method = $this->getHttpMethodFromHttpAttribute();
         }
-        if ($this->getHttpMethodFromApiAttribute() !== null) {
-            $method = $this->getHttpMethodFromHttpAttribute();
-        }
 
         if (is_null($method)) {
             throw new MissingParameter('A Http Method must be set.');
@@ -227,17 +224,6 @@ class RequestBuilder implements RequestBuilderInterface
         }
 
         return $attributes[0]->newInstance()->getMethod();
-    }
-
-    private function getHttpMethodFromApiAttribute(): ?string
-    {
-        $attributes = $this->reflectEntity->getAttributes(ApiEndpoint::class, \ReflectionAttribute::IS_INSTANCEOF);
-        if (!\is_array($attributes) || \count($attributes) < 1) {
-            return null;
-        }
-
-        //Todo
-        return $attributes[0]->newInstance()->getApiEndpoint();
     }
 
     /**
