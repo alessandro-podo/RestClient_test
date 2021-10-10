@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Attribute;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -16,6 +18,4 @@ class Url
     {
         return $this->url;
     }
-
-
 }

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient;
 
 class RestClient
 {
-
     public function __construct()
     {
         $this->client = new \Symfony\Component\HttpClient\HttpClient();
@@ -12,6 +13,6 @@ class RestClient
 
     public function __toString()
     {
-        return"Test";
+        return 'Test';
     }
 }

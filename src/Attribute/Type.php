@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Attribute;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
@@ -20,6 +22,4 @@ class Type
     {
         return $this->type;
     }
-
-
 }

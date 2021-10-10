@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace RestClientTests\Implementierung;
 
 use RestClient\Attribute\Type;
@@ -6,12 +9,10 @@ use RestClient\Attribute\Url;
 use RestClient\Authentication\TokenAuthenticator;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
 #[Url('https://google.de')]
 #[TokenAuthenticator('api', 'jjjjj')]
 class EntityMissingMethod
 {
-
     #[Assert\NotBlank()]
     #[Type(Type::JSON)]
     private int $id;
@@ -27,6 +28,7 @@ class EntityMissingMethod
     public function setId(int $id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -38,8 +40,7 @@ class EntityMissingMethod
     public function setDisplay(string $display): self
     {
         $this->display = $display;
+
         return $this;
     }
-
-
 }

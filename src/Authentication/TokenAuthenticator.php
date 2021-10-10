@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Authentication;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -15,24 +17,25 @@ class TokenAuthenticator implements \RestClient\Interfaces\Authenticator
 
     public function getAuthenticationMethod(): string
     {
-        return "token";
+        return 'token';
     }
 
-    public function setHeaderFieldName($fieldName): TokenAuthenticator
+    public function setHeaderFieldName($fieldName): self
     {
         $this->credentials[0] = $fieldName;
+
         return $this;
     }
 
-    public function setHeaderFieldValue($fieldValue): TokenAuthenticator
+    public function setHeaderFieldValue($fieldValue): self
     {
         $this->credentials[1] = $fieldValue;
+
         return $this;
     }
 
-    public function getCredentials():array
+    public function getCredentials(): array
     {
         return $this->credentials;
     }
-
 }

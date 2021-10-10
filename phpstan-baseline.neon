@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to an undefined method object\\:\\:getFqfn\\(\\)\\.$#"
+			count: 3
+			path: src/Command/CacheReload.php

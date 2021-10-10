@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClientTests;
 
 use PHPUnit\Framework\TestCase;
@@ -8,15 +10,19 @@ use RestClient\RestClientBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Kernel;
 
-class FunctionalTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class FunctionalTest extends TestCase
 {
-    public function testServiceWiring()
+    public function testServiceWiring(): void
     {
-        $kernel = new KnpULoremIpsumTestingKernel("test", true);
+        $kernel = new KnpULoremIpsumTestingKernel('test', true);
         $kernel->boot();
         $container = $kernel->getContainer();
         $ipsum = $container->get('request.builder');
-        $this->assertInstanceOf(RequestBuilder::class, $ipsum);
+        static::assertInstanceOf(RequestBuilder::class, $ipsum);
     }
 }
 
@@ -29,7 +35,7 @@ class KnpULoremIpsumTestingKernel extends Kernel
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
     }
 }

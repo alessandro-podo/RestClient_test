@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Exceptions;
 
 use Symfony\Component\Validator\ConstraintViolationListInterface;
@@ -7,8 +9,8 @@ use Throwable;
 
 class ConstraintViolation extends \Exception
 {
-
     private ConstraintViolationListInterface $violations;
+
     public function __construct($message, ConstraintViolationListInterface $violations, $code = 0, Throwable $previous = null)
     {
         $this->violations = $violations;

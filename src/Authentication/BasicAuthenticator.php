@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Authentication;
 
 #[\Attribute(\Attribute::TARGET_CLASS)]
@@ -15,24 +17,25 @@ class BasicAuthenticator implements \RestClient\Interfaces\Authenticator
 
     public function getAuthenticationMethod(): string
     {
-        return "http-basic";
+        return 'http-basic';
     }
 
     public function setUsername($username): self
     {
         $this->credentials[0] = $username;
+
         return $this;
     }
 
     public function setPassword($password): self
     {
         $this->credentials[1] = $password;
+
         return $this;
     }
 
-    public function getCredentials():array
+    public function getCredentials(): array
     {
         return $this->credentials;
     }
-
 }

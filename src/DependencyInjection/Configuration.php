@@ -1,18 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Configuration implements \Symfony\Component\Config\Definition\ConfigurationInterface
 {
-
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public function getConfigTreeBuilder()
     {
-
         /*security_headers:
           frames: sameorigin
           sniff_mimes: false
@@ -56,7 +56,7 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
         $treeBuilder = new TreeBuilder('rest_client');
         $treeBuilder->getRootNode()
             ->children()
-            ->integerNode("test")->defaultValue(4)->end()
+            ->integerNode('test')->defaultValue(4)->end()
             ->arrayNode('configs')->children()
             ->scalarNode('default')->end()
             ->arrayNode('scripts')->scalarPrototype()->end()->end()
@@ -73,7 +73,6 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
                 ->end()
             ->end()*/
         ;
-
 
         return $treeBuilder;
     }

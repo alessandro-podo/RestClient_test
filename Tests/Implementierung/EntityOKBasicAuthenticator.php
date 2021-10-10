@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace RestClientTests\Implementierung;
 
 use RestClient\Attribute\HttpMethod;
@@ -12,7 +15,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[BasicAuthenticator('api', 'jjjjj')]
 class EntityOKBasicAuthenticator
 {
-
     #[Assert\NotBlank()]
     #[Type(Type::JSON)]
     private int $id;
@@ -28,6 +30,7 @@ class EntityOKBasicAuthenticator
     public function setId(int $id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -39,8 +42,7 @@ class EntityOKBasicAuthenticator
     public function setDisplay(string $display): self
     {
         $this->display = $display;
+
         return $this;
     }
-
-
 }

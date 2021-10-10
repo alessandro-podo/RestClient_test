@@ -1,7 +1,8 @@
 <?php
 
-namespace RestClient;
+declare(strict_types=1);
 
+namespace RestClient;
 
 use ReflectionClass;
 use RestClient\Attribute\HttpMethod;
@@ -22,6 +23,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RequestBuilder implements RequestBuilderInterface
 {
     private Authenticator $authentication;
+    private string $url;
+    private string $method;
     private object $entity;
     private array $headers = [];
     private array $query = [];
@@ -45,118 +48,26 @@ class RequestBuilder implements RequestBuilderInterface
     }
 
     /**
-     * Only if you dont use Attribute on the Entity
+     * Only if you dont use Attribute on the Entity.
      */
-    public function setAuthentication(Authenticator $authentication):self
+    public function setAuthentication(Authenticator $authentication): self
     {
         $this->authentication = $authentication;
 
         return $this;
     }
 
-    /**
-     * @throws MissingParameter
-     */
-    private function getAuthentication(): Authenticator
-    {
-        $auth = null;
-        $attributes = $this->reflectEntity->getAttributes(Authenticator::class, \ReflectionAttribute::IS_INSTANCEOF);
-
-        if(is_array($attributes) AND count($attributes) === 1){
-            $auth = $attributes[0]->newInstance();
-        }
-
-        if(isset($this->authentication)){
-            $auth = $this->authentication;
-        }
-
-        if($auth === null){
-            throw new MissingParameter('It must be set a Authenticator.');
-        }
-
-        return $auth;
-    }
-
-    /**
-     * @throws MissingParameter
-     * @throws ConstraintViolation
-     */
-    private function validateEntity():void
-    {
-        if(!isset($this->entity)){
-            throw new MissingParameter('It must be set an Entity.');
-        }
-
-        $violations = $this->validator->validate($this->entity);
-
-        if(count($violations)>0){
-            throw new ConstraintViolation(sprintf('Problems have surfaced with the entity %s',get_class($this->entity)),$violations);
-        }
-    }
-
-    public function setEntity(Object $entity): RequestBuilder
+    public function setEntity(object $entity): self
     {
         $this->entity = $entity;
-        $this->reflectEntity = new ReflectionClass(get_class($entity));
+        $this->reflectEntity = new ReflectionClass(\get_class($entity));
 
+        //getter werden nur noch exeption thrown
+        //setAuthentifactorFromEntity
+        //setUrlFromEntity
+        //setHttpMethodFromEntity
+        //Zuerst APIEndpoint laden, dann die anderen zum Schluss über self::method
         return $this;
-    }
-
-    /**
-     * @throws WrongParameter
-     * @throws MissingParameter
-     */
-    private function getHttpMethod(): string
-    {
-        $attributes = $this->reflectEntity->getAttributes(HttpMethod::class, \ReflectionAttribute::IS_INSTANCEOF);
-
-        if(!is_array($attributes) OR count($attributes)<1){
-            throw new MissingParameter('A Http Method must be set.');
-        }
-
-        $method = $attributes[0]->newInstance()->getMethod();
-
-        if(!in_array($method,$this->possibleHttpMethods)){
-            throw new WrongParameter('The HTTP Method must be one of '.implode(',',$this->possibleHttpMethods));
-        }
-
-        return $method;
-    }
-
-    /**
-     * @throws WrongParameter
-     * @throws MissingParameter
-     * @throws ConstraintViolation
-     */
-    private function getValuesFromEntity(): array
-    {
-        $values = [];
-        $this->validateEntity();
-        $properties = $this->reflectEntity->getProperties();
-
-        foreach ($properties as $property){
-            $propertyName = $property->getName();
-            $getMethod = "get".$propertyName;
-            try {
-                $propertyValue = $this->entity->$getMethod();
-            }catch (\Throwable $th){
-                continue;
-            }
-
-            $attributes = $property->getAttributes(Type::class, \ReflectionAttribute::IS_INSTANCEOF);
-            if(!is_array($attributes) OR count($attributes)<1){
-                continue;
-            }
-
-            $type = $attributes[0]->newInstance()->getType();
-            if(!in_array($type,$this->possibleTypes)){
-                throw new WrongParameter('The Type must be one of '.implode(',',$this->possibleTypes));
-            }
-
-            $values[$type][$propertyName] = $propertyValue;
-        }
-
-        return $values;
     }
 
     /**
@@ -164,84 +75,14 @@ class RequestBuilder implements RequestBuilderInterface
      */
     public function addHeader(string $fieldName, string $fieldValue, bool $exception = true): self
     {
-        if(isset($this->headers[$fieldName]) AND $exception){
-            throw new OverrideExistingParameter(sprintf('You can not override the %s Value',$fieldName));
+        if (isset($this->headers[$fieldName]) && $exception) {
+            throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
         }
         $this->headers[$fieldName] = $fieldValue;
 
         return $this;
     }
 
-    /**
-     * @throws OverrideExistingParameter
-     */
-    private function addQuery(string $fieldName, string $fieldValue, bool $exception = true){
-        if(isset($this->query[$fieldName]) AND $exception){
-            throw new OverrideExistingParameter(sprintf('You can not override the %s Value',$fieldName));
-        }
-        $this->query[$fieldName] = $fieldValue;
-    }
-
-
-    /**
-     * @throws OverrideExistingParameter
-     */
-    private function addJson(string $fieldName, string $fieldValue, bool $exception = true){
-        if(isset($this->json[$fieldName]) AND $exception){
-            throw new OverrideExistingParameter(sprintf('You can not override the %s Value',$fieldName));
-        }
-        $this->json[$fieldName] = $fieldValue;
-    }
-
-
-    /**
-     * @throws MissingParameter
-     * @throws ConstraintViolation
-     */
-    private function getUrl():string
-    {
-        $attributes = $this->reflectEntity->getAttributes(Url::class, \ReflectionAttribute::IS_INSTANCEOF);
-
-        if(!is_array($attributes) OR count($attributes)<1){
-            throw new MissingParameter('A Url must be set.');
-        }
-
-        $url = $attributes[0]->newInstance()->getUrl();
-
-        $violations = $this->validator->validate($url,new ConstraintsUrl([
-            'protocols' => ['http', 'https'],
-        ]));
-
-        if(count($violations)>0){
-            throw new ConstraintViolation(sprintf('Problems with the Url %s',$url),$violations);
-        }
-        #$this->validateUrl($url);
-
-        return $url;
-    }
-
-    /**
-     * @throws OverrideExistingParameter
-     * @throws WrongParameter
-     * @throws ConstraintViolation
-     * @throws MissingParameter
-     */
-    private function hydrateWithEntity():void
-    {
-        foreach ($this->getValuesFromEntity() as $type => $items){
-            foreach ($items as $key => $item){
-                if($type == Type::HEADER){
-                    $this->addHeader($key,$item);
-                }
-                if($type == Type::JSON){
-                    $this->addJson($key,$item);
-                }
-                if($type == Type::QUERY){
-                    $this->addQuery($key,$item);
-                }
-            }
-        }
-    }
     /**
      * @throws MissingParameter
      * @throws WrongParameter
@@ -252,14 +93,13 @@ class RequestBuilder implements RequestBuilderInterface
     {
         $request = (new Request())
             ->setHttpMethod($this->getHttpMethod())
-            ->setUrl($this->getUrl())
-            ;
+            ->setUrl($this->getUrl());
 
-        if($this->getAuthentication()->getAuthenticationMethod() === "http-basic"){
+        if ('http-basic' === $this->getAuthentication()->getAuthenticationMethod()) {
             $request->setAuthBasic($this->getAuthentication()->getCredentials());
         }
-        if($this->getAuthentication()->getAuthenticationMethod() === "token") {
-           $request->addHeaders($this->getAuthentication()->getCredentials()[0], $this->getAuthentication()->getCredentials()[1]);
+        if ('token' === $this->getAuthentication()->getAuthenticationMethod()) {
+            $request->addHeaders($this->getAuthentication()->getCredentials()[0], $this->getAuthentication()->getCredentials()[1]);
         }
 
         $this->hydrateWithEntity();
@@ -280,6 +120,177 @@ class RequestBuilder implements RequestBuilderInterface
     }
 
     /**
+     * @throws MissingParameter
+     */
+    private function getAuthentication(): Authenticator
+    {
+        $auth = null;
+        $attributes = $this->reflectEntity->getAttributes(Authenticator::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (\is_array($attributes) && 1 === \count($attributes)) {
+            $auth = $attributes[0]->newInstance();
+        }
+
+        if (isset($this->authentication)) {
+            $auth = $this->authentication;
+        }
+
+        if (null === $auth) {
+            throw new MissingParameter('It must be set a Authenticator.');
+        }
+
+        return $auth;
+    }
+
+    /**
+     * @throws MissingParameter
+     * @throws ConstraintViolation
+     */
+    private function validateEntity(): void
+    {
+        if (!isset($this->entity)) {
+            throw new MissingParameter('It must be set an Entity.');
+        }
+
+        $violations = $this->validator->validate($this->entity);
+
+        if (\count($violations) > 0) {
+            throw new ConstraintViolation(sprintf('Problems have surfaced with the entity %s', \get_class($this->entity)), $violations);
+        }
+    }
+
+    /**
+     * @throws WrongParameter
+     * @throws MissingParameter
+     */
+    private function getHttpMethod(): string
+    {
+        $attributes = $this->reflectEntity->getAttributes(HttpMethod::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            throw new MissingParameter('A Http Method must be set.');
+        }
+
+        $method = $attributes[0]->newInstance()->getMethod();
+
+        if (!\in_array($method, $this->possibleHttpMethods, true)) {
+            throw new WrongParameter('The HTTP Method must be one of ' . implode(',', $this->possibleHttpMethods));
+        }
+
+        return $method;
+    }
+
+    /**
+     * @throws WrongParameter
+     * @throws MissingParameter
+     * @throws ConstraintViolation
+     */
+    private function getValuesFromEntity(): array
+    {
+        $values = [];
+        $this->validateEntity();
+        $properties = $this->reflectEntity->getProperties();
+
+        foreach ($properties as $property) {
+            $propertyName = $property->getName();
+            $getMethod = 'get' . $propertyName;
+
+            try {
+                $propertyValue = $this->entity->{$getMethod}();
+            } catch (\Throwable $th) {
+                continue;
+            }
+
+            $attributes = $property->getAttributes(Type::class, \ReflectionAttribute::IS_INSTANCEOF);
+            if (!\is_array($attributes) || \count($attributes) < 1) {
+                continue;
+            }
+
+            $type = $attributes[0]->newInstance()->getType();
+            if (!\in_array($type, $this->possibleTypes, true)) {
+                throw new WrongParameter('The Type must be one of ' . implode(',', $this->possibleTypes));
+            }
+
+            $values[$type][$propertyName] = $propertyValue;
+        }
+
+        return $values;
+    }
+
+    /**
+     * @throws OverrideExistingParameter
+     */
+    private function addQuery(string $fieldName, string $fieldValue, bool $exception = true): void
+    {
+        if (isset($this->query[$fieldName]) && $exception) {
+            throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
+        }
+        $this->query[$fieldName] = $fieldValue;
+    }
+
+    /**
+     * @throws OverrideExistingParameter
+     */
+    private function addJson(string $fieldName, string $fieldValue, bool $exception = true): void
+    {
+        if (isset($this->json[$fieldName]) && $exception) {
+            throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
+        }
+        $this->json[$fieldName] = $fieldValue;
+    }
+
+    /**
+     * @throws MissingParameter
+     * @throws ConstraintViolation
+     */
+    private function getUrl(): string
+    {
+        $attributes = $this->reflectEntity->getAttributes(Url::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            throw new MissingParameter('A Url must be set.');
+        }
+
+        $url = $attributes[0]->newInstance()->getUrl();
+
+        $violations = $this->validator->validate($url, new ConstraintsUrl([
+            'protocols' => ['http', 'https'],
+        ]));
+
+        if (\count($violations) > 0) {
+            throw new ConstraintViolation(sprintf('Problems with the Url %s', $url), $violations);
+        }
+        #$this->validateUrl($url);
+
+        return $url;
+    }
+
+    /**
+     * @throws OverrideExistingParameter
+     * @throws WrongParameter
+     * @throws ConstraintViolation
+     * @throws MissingParameter
+     */
+    private function hydrateWithEntity(): void
+    {
+        foreach ($this->getValuesFromEntity() as $type => $items) {
+            foreach ($items as $key => $item) {
+                if (Type::HEADER == $type) {
+                    $this->addHeader($key, $item);
+                }
+                if (Type::JSON == $type) {
+                    $this->addJson($key, $item);
+                }
+                if (Type::QUERY == $type) {
+                    $this->addQuery($key, $item);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param mixed $url
+     *
      * @throws WrongParameter
      */
     private function validateUrl($url): void
@@ -288,5 +299,4 @@ class RequestBuilder implements RequestBuilderInterface
             throw new WrongParameter(sprintf('The Url %s is not valid', $url));
         }
     }
-
 }
