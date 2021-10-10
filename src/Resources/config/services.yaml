@@ -5,3 +5,10 @@ services:
       $parameterBag: '@parameter_bag'
 
   RestClient\RequestBuilderInterface: '@request.builder'
+
+  make.entity:
+    class: RestClient\Maker\MakeEntity
+    arguments:
+      $parameterBag: '@parameter_bag'
+    tags:
+      - 'maker.command'
