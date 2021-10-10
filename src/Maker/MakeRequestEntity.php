@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
  * @author Javier Eguiluz <javier.eguiluz@gmail.com>
  * @author Ryan Weaver <weaverryan@gmail.com>
  */
-final class MakeEntity extends AbstractMaker
+final class MakeRequestEntity extends AbstractMaker
 {
 
     private array $possibleConnections;
@@ -38,7 +38,7 @@ final class MakeEntity extends AbstractMaker
 
     public static function getCommandName(): string
     {
-        return 'make:restClient:entity';
+        return 'make:restClient:requestEntity';
     }
 
     public static function getCommandDescription(): string
@@ -52,7 +52,7 @@ final class MakeEntity extends AbstractMaker
             ->addArgument('endpointUrl', InputArgument::REQUIRED, 'Wie ist die relative URL des Endpoints?')
             ->addArgument('apiEndpoint', InputArgument::OPTIONAL, 'Welchen Endpoint Betrifft es?')
             ->addArgument('apiMethod', InputArgument::OPTIONAL, 'Welche HTTP Methode soll verwendent werden?')
-            ->setHelp('Hilfe');
+            ->setHelp('Create a RequestEntity');
 
         $inputConf->setArgumentAsNonInteractive('apiEndpoint');
         $inputConf->setArgumentAsNonInteractive('apiMethod');
@@ -135,12 +135,13 @@ final class MakeEntity extends AbstractMaker
 
         $formClassNameDetails = $generator->createClassNameDetails(
             ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
-            'RestEndpoint\\' . implode("\\", $splitedUrlParts['forClassName']) . '\\' . ucfirst(strtolower($apiMethod))
+            'RestClient\\' . implode("\\", $splitedUrlParts['forClassName']),
+            'Request'
         );
 
         $generator->generateClass(
             $formClassNameDetails->getFullName(),
-            __DIR__ . '/../Resources/skeleton/makeEntity.tpl.php',
+            __DIR__ . '/../Resources/skeleton/makeRequestEntity.tpl.php',
             [
                 'endpoint' => $apiEndpoint,
                 'method' => $apiMethod,
