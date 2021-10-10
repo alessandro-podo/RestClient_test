@@ -17,10 +17,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-/**
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
- * @author Ryan Weaver <weaverryan@gmail.com>
- */
+
 final class MakeRequestEntity extends AbstractMaker
 {
 
