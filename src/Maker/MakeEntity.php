@@ -4,6 +4,7 @@ namespace RestClient\Maker;
 
 
 use RestClient\Attribute\HttpMethod;
+use RestClient\Attribute\Type;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Generator;
@@ -12,6 +13,7 @@ use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -24,11 +26,14 @@ final class MakeEntity extends AbstractMaker
 
     private array $possibleConnections;
     private array $possibleMethods;
+    private array $possibleTypes;
+    private array $fields = [];
 
     public function __construct(private ParameterBagInterface $parameterBag)
     {
         $this->possibleConnections = array_keys($this->parameterBag->get("rest_client.connections"));
         $this->possibleMethods = (new \ReflectionClass(HttpMethod::class))->getConstants();
+        $this->possibleTypes = (new \ReflectionClass(Type::class))->getConstants();
     }
 
     public static function getCommandName(): string
@@ -94,6 +99,14 @@ final class MakeEntity extends AbstractMaker
             $input->setArgument('apiEndpoint', $io->askQuestion($question));
         }
 
+        while (true) {
+            $newProperty = $this->askForNewProperty($io);
+
+            if (null === $newProperty) {
+                break;
+            }
+            $this->fields[$newProperty['name']] = $newProperty;
+        }
     }
 
 
@@ -130,7 +143,8 @@ final class MakeEntity extends AbstractMaker
             __DIR__ . '/../Resources/skeleton/makeEntity.tpl.php',
             [
                 'endpoint' => $apiEndpoint,
-                'method' => $apiMethod
+                'method' => $apiMethod,
+                'properties' => $this->fields
             ]
         );
 
@@ -159,6 +173,84 @@ final class MakeEntity extends AbstractMaker
 
         return $splitUrl;
     }
+
+    private function askForNewProperty(ConsoleStyle $io): ?array
+    {
+        $io->writeln('');
+
+        $question = (new Question('Wie soll das Feld genannt werden? (leerlassen zum beenden)'))
+            ->setValidator(function ($answer) {
+                if (array_key_exists($answer, $this->fields)) {
+                    throw new \RuntimeException('This Property is already set');
+                }
+                return $answer;
+            });
+        $feldName = $io->askQuestion($question);
+
+        if ($feldName === null) {
+            return null;
+        }
+
+        $phpTypes = ['string', 'int', 'float', 'array'];
+        $question = (new Question('Welchen PhpTyp soll das Feld ' . $feldName . ' haben?'))
+            ->setValidator(function ($answer) use ($phpTypes) {
+                if (!in_array($answer, $phpTypes)) {
+                    throw new \RuntimeException(
+                        'You must use one of these Types ' . implode(',', $phpTypes)
+                    );
+                }
+
+                return $answer;
+            })
+            ->setAutocompleterValues($phpTypes)
+            ->setMaxAttempts(3);
+        $phpTyp = $io->askQuestion($question);
+
+        $question = (new Question('Welchen RequestTyp soll das Feld ' . $feldName . ' haben?'))
+            ->setValidator(function ($answer) {
+                if (!in_array($answer, $this->possibleTypes)) {
+                    throw new \RuntimeException(
+                        'You must use one of these Types ' . implode(',', $this->possibleTypes)
+                    );
+                }
+
+                return $answer;
+            })
+            ->setAutocompleterValues($this->possibleTypes)
+            ->setMaxAttempts(3);
+        $type = $io->askQuestion($question);
+
+        $question = (new ConfirmationQuestion('Is ' . $feldName . ' required?', false));
+        $required = $io->askQuestion($question);
+
+        $allowedValuesString = null;
+        if ($phpTyp === 'array') {
+            $question = (new Question('Welche Werte sollen zulässig sein. (Auswahl kommasepertiert,leer für alles)'))
+                ->setValidator(function ($answer) {
+                    if (strlen($answer) === 0) {
+                        return null;
+                    }
+                    return explode(",", $answer);
+                })
+                ->setMaxAttempts(3);
+            $allowedValues = $io->askQuestion($question);
+
+            $allowedValuesString = "";
+            foreach ($allowedValues as $allowedValue) {
+                $allowedValuesString .= "'" . trim($allowedValue) . "',";
+            }
+            $allowedValuesString = substr($allowedValuesString, 0, -1);
+        }
+
+        return [
+            'type' => $type,
+            'name' => $feldName,
+            'phpType' => $phpTyp,
+            'required' => $required,
+            'allowedValuesString' => $allowedValuesString
+        ];
+    }
+
 
     public function configureDependencies(DependencyBuilder $dependencies)
     {
