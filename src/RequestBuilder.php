@@ -62,18 +62,13 @@ class RequestBuilder implements RequestBuilderInterface
         $this->entity = $entity;
         $this->reflectEntity = new ReflectionClass(\get_class($entity));
 
-        //getter werden nur noch exeption thrown
-        //setAuthentifactorFromEntity
-        //setUrlFromEntity
-        //setHttpMethodFromEntity
-        //Zuerst APIEndpoint laden, dann die anderen zum Schluss über self::method
         return $this;
     }
 
     /**
      * @throws OverrideExistingParameter
      */
-    public function addHeader(string $fieldName, string $fieldValue, bool $exception = true): self
+    public function addHeader(string $fieldName, mixed $fieldValue, bool $exception = true): self
     {
         if (isset($this->headers[$fieldName]) && $exception) {
             throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
@@ -165,19 +160,28 @@ class RequestBuilder implements RequestBuilderInterface
      */
     private function getHttpMethod(): string
     {
-        $attributes = $this->reflectEntity->getAttributes(HttpMethod::class, \ReflectionAttribute::IS_INSTANCEOF);
+        $method = $this->getHttpMethodFromHttpAttribute();
 
-        if (!\is_array($attributes) || \count($attributes) < 1) {
+        if (is_null($method)) {
             throw new MissingParameter('A Http Method must be set.');
         }
-
-        $method = $attributes[0]->newInstance()->getMethod();
 
         if (!\in_array($method, $this->possibleHttpMethods, true)) {
             throw new WrongParameter('The HTTP Method must be one of ' . implode(',', $this->possibleHttpMethods));
         }
 
         return $method;
+    }
+
+    private function getHttpMethodFromHttpAttribute(): ?string
+    {
+        $attributes = $this->reflectEntity->getAttributes(HttpMethod::class, \ReflectionAttribute::IS_INSTANCEOF);
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            return null;
+        }
+
+        return $attributes[0]->newInstance()->getMethod();
+
     }
 
     /**
@@ -220,7 +224,7 @@ class RequestBuilder implements RequestBuilderInterface
     /**
      * @throws OverrideExistingParameter
      */
-    private function addQuery(string $fieldName, string $fieldValue, bool $exception = true): void
+    private function addQuery(string $fieldName, mixed $fieldValue, bool $exception = true): void
     {
         if (isset($this->query[$fieldName]) && $exception) {
             throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
@@ -231,7 +235,7 @@ class RequestBuilder implements RequestBuilderInterface
     /**
      * @throws OverrideExistingParameter
      */
-    private function addJson(string $fieldName, string $fieldValue, bool $exception = true): void
+    private function addJson(string $fieldName, mixed $fieldValue, bool $exception = true): void
     {
         if (isset($this->json[$fieldName]) && $exception) {
             throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));

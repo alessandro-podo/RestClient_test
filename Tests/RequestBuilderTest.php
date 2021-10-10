@@ -72,7 +72,7 @@ final class RequestBuilderTest extends TestCase
      */
     public function testGetRequest($entity, $authentication, $addHeaders, $assertion, $headers, $json, $httpMethod, $query, $url, $authBasic): void
     {
-        if (class_exists($assertion)) {
+        if (is_string($assertion) and class_exists($assertion)) {
             $this->expectException($assertion);
         }
 
@@ -98,7 +98,7 @@ final class RequestBuilderTest extends TestCase
         //RequestBuilder
         $request = $requestBuilder->setEntity($entity)->getRequest();
 
-        if (!class_exists($assertion)) {
+        if (is_null($assertion) or !class_exists($assertion)) {
             static::assertEqualsCanonicalizing($headers, $request->getHeaders());
             static::assertEqualsCanonicalizing($json, $request->getJson());
             static::assertEqualsCanonicalizing($httpMethod, $request->getHttpMethod());

@@ -62,7 +62,7 @@ class Request
         return $this;
     }
 
-    public function addHeaders(string $fieldName, string $fieldValue): self
+    public function addHeaders(string $fieldName, mixed $fieldValue): self
     {
         if (!\is_array($this->headers)) {
             $this->headers = [];
@@ -84,7 +84,7 @@ class Request
         return $this;
     }
 
-    public function addQuery(string $fieldName, string $fieldValue): self
+    public function addQuery(string $fieldName, mixed $fieldValue): self
     {
         if (!\is_array($this->query)) {
             $this->query = [];
@@ -106,7 +106,7 @@ class Request
         return $this;
     }
 
-    public function addJson(string $fieldName, string $fieldValue): self
+    public function addJson(string $fieldName, mixed $fieldValue): self
     {
         if (!\is_array($this->json)) {
             $this->json = [];
