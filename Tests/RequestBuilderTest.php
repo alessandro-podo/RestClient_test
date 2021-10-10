@@ -24,6 +24,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
  */
 final class RequestBuilderTest extends TestCase
 {
+    /**
+     * @var mixed|\PHPUnit\Framework\MockObject\MockObject|ParameterBag
+     */
+    private mixed $parameterBag;
+
     protected function setUp(): void
     {
         $this->parameterBag = $this->getMockBuilder(ParameterBag::class)->getMock();
@@ -58,20 +63,12 @@ final class RequestBuilderTest extends TestCase
 
     /**
      * @dataProvider entities
-     *
-     * @param mixed $entity
-     * @param mixed $authentication
-     * @param mixed $addHeaders
-     * @param mixed $assertion
-     * @param mixed $headers
-     * @param mixed $json
-     * @param mixed $httpMethod
-     * @param mixed $query
-     * @param mixed $url
-     * @param mixed $authBasic
      */
-    public function testGetRequest($entity, $authentication, $addHeaders, $assertion, $headers, $json, $httpMethod, $query, $url, $authBasic): void
+    public function testGetRequest($entity, $authentication, $addHeaders, $assertion, $headers, $json, $httpMethod, $query, $url, $authBasic, $parameterBagReturn): void
     {
+        $this->parameterBag
+            ->method('get')->willReturn($parameterBagReturn);
+
         if (is_string($assertion) and class_exists($assertion)) {
             $this->expectException($assertion);
         }
@@ -122,6 +119,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => null,
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityOKTokenAuthenticator' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -134,6 +132,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityOKTokenAuthenticatorWithExtraTokenAuthenticator' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -146,6 +145,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityOKBasicAuthenticator' => [
                 'Entity' => (new EntityOKBasicAuthenticator())->setId(12),
@@ -158,6 +158,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => ['auth_basic' => ['api', 'jjjjj']],
+                'parameterBagReturn' => []
             ],
             'EntityOKTokenAuthenticatorWithExtraHeader' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -170,6 +171,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityMissingMethod' => [
                 'Entity' => (new EntityMissingMethod())->setId(12),
@@ -182,6 +184,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityWrongMethod' => [
                 'Entity' => (new EntityWrongMethod())->setId(12),
@@ -194,6 +197,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityMissingAuthenticator' => [
                 'Entity' => (new EntityMissingAuthenticator())->setId(12),
@@ -206,6 +210,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
             'EntityMissingAuthenticatorOk' => [
                 'Entity' => (new EntityMissingAuthenticator())->setId(12),
@@ -218,6 +223,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
+                'parameterBagReturn' => []
             ],
         ];
     }

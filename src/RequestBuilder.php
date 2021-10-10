@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace RestClient;
 
 use ReflectionClass;
+use RestClient\Attribute\ApiEndpoint;
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use RestClient\Attribute\Url;
+use RestClient\Authentication\BasicAuthenticator;
+use RestClient\Authentication\TokenAuthenticator;
 use RestClient\Dto\Request;
 use RestClient\Exceptions\ConstraintViolation;
 use RestClient\Exceptions\MissingParameter;
@@ -36,7 +39,7 @@ class RequestBuilder implements RequestBuilderInterface
     private array $possibleTypes = [];
     private ValidatorInterface|RecursiveValidator $validator;
 
-    public function __construct(ParameterBagInterface $parameterBag)
+    public function __construct(private ParameterBagInterface $parameterBag)
     {
         $this->validator = Validation::createValidatorBuilder()
             ->enableAnnotationMapping(true)
@@ -120,10 +123,11 @@ class RequestBuilder implements RequestBuilderInterface
     private function getAuthentication(): Authenticator
     {
         $auth = null;
-        $attributes = $this->reflectEntity->getAttributes(Authenticator::class, \ReflectionAttribute::IS_INSTANCEOF);
-
-        if (\is_array($attributes) && 1 === \count($attributes)) {
-            $auth = $attributes[0]->newInstance();
+        if ($this->getAuthenticationFromApiAttribute() !== null) {
+            $auth = $this->getAuthenticationFromApiAttribute();
+        }
+        if ($this->getAuthenticationFromAuthenticatorAttribute() !== null) {
+            $auth = $this->getAuthenticationFromAuthenticatorAttribute();
         }
 
         if (isset($this->authentication)) {
@@ -135,6 +139,42 @@ class RequestBuilder implements RequestBuilderInterface
         }
 
         return $auth;
+    }
+
+    private function getAuthenticationFromAuthenticatorAttribute(): ?Authenticator
+    {
+        $attributes = $this->reflectEntity->getAttributes(Authenticator::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (1 !== \count($attributes)) {
+            return null;
+        }
+        return $attributes[0]->newInstance();
+    }
+
+    /**
+     * @throws WrongParameter
+     * @throws MissingParameter
+     */
+    private function getAuthenticationFromApiAttribute(): ?Authenticator
+    {
+        $attributes = $this->reflectEntity->getAttributes(ApiEndpoint::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (1 !== \count($attributes)) {
+            return null;
+        }
+
+        $api = $this->getConnection($attributes[0]->newInstance()->getApiEndpoint());
+
+        if (isset($api["username"]) and isset($api["keyField"])) {
+            throw new WrongParameter('You cant set username and keyField');
+        }
+        if (isset($api["username"]) and isset($api["password"])) {
+            return (new BasicAuthenticator($api["username"], $api["password"]));
+        }
+        if (isset($api["keyField"]) and isset($api["keyValue"])) {
+            return (new TokenAuthenticator($api["keyField"], $api["keyValue"]));
+        }
+        return null;
     }
 
     /**
@@ -160,7 +200,13 @@ class RequestBuilder implements RequestBuilderInterface
      */
     private function getHttpMethod(): string
     {
-        $method = $this->getHttpMethodFromHttpAttribute();
+        $method = null;
+        if ($this->getHttpMethodFromHttpAttribute() !== null) {
+            $method = $this->getHttpMethodFromHttpAttribute();
+        }
+        if ($this->getHttpMethodFromApiAttribute() !== null) {
+            $method = $this->getHttpMethodFromHttpAttribute();
+        }
 
         if (is_null($method)) {
             throw new MissingParameter('A Http Method must be set.');
@@ -181,7 +227,17 @@ class RequestBuilder implements RequestBuilderInterface
         }
 
         return $attributes[0]->newInstance()->getMethod();
+    }
 
+    private function getHttpMethodFromApiAttribute(): ?string
+    {
+        $attributes = $this->reflectEntity->getAttributes(ApiEndpoint::class, \ReflectionAttribute::IS_INSTANCEOF);
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            return null;
+        }
+
+        //Todo
+        return $attributes[0]->newInstance()->getApiEndpoint();
     }
 
     /**
@@ -249,13 +305,17 @@ class RequestBuilder implements RequestBuilderInterface
      */
     private function getUrl(): string
     {
-        $attributes = $this->reflectEntity->getAttributes(Url::class, \ReflectionAttribute::IS_INSTANCEOF);
-
-        if (!\is_array($attributes) || \count($attributes) < 1) {
-            throw new MissingParameter('A Url must be set.');
+        $url = null;
+        if ($this->getUrlFromUrlAttribute() !== null) {
+            $url = $this->getUrlFromUrlAttribute();
+        }
+        if ($this->getUrlFromApiAttribute() !== null) {
+            $url = $this->getUrlFromApiAttribute();
         }
 
-        $url = $attributes[0]->newInstance()->getUrl();
+        if (is_null($url)) {
+            throw new MissingParameter('A Url must be set.');
+        }
 
         $violations = $this->validator->validate($url, new ConstraintsUrl([
             'protocols' => ['http', 'https'],
@@ -264,9 +324,42 @@ class RequestBuilder implements RequestBuilderInterface
         if (\count($violations) > 0) {
             throw new ConstraintViolation(sprintf('Problems with the Url %s', $url), $violations);
         }
-        #$this->validateUrl($url);
 
         return $url;
+    }
+
+    private function getUrlFromUrlAttribute(): ?string
+    {
+        $attributes = $this->reflectEntity->getAttributes(Url::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            return null;
+        }
+
+        return $attributes[0]->newInstance()->getUrl();
+    }
+
+    private function getUrlFromApiAttribute(): ?string
+    {
+        $attributes = $this->reflectEntity->getAttributes(ApiEndpoint::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (!\is_array($attributes) || \count($attributes) < 1) {
+            return null;
+        }
+
+        return $this->getConnection($attributes[0]->newInstance()->getApiEndpoint())["url"];
+    }
+
+    /**
+     * @throws MissingParameter
+     */
+    private function getConnection(string $connectionName): array
+    {
+        if (isset($this->parameterBag->get("rest_client.connections")[$connectionName])) {
+            return $this->parameterBag->get("rest_client.connections")[$connectionName];
+        }
+
+        throw new MissingParameter(sprintf('The connection %s dont exist', $connectionName));
     }
 
     /**
@@ -289,18 +382,6 @@ class RequestBuilder implements RequestBuilderInterface
                     $this->addQuery($key, $item);
                 }
             }
-        }
-    }
-
-    /**
-     * @param mixed $url
-     *
-     * @throws WrongParameter
-     */
-    private function validateUrl($url): void
-    {
-        if (!(preg_match('/^(http|https):\/\/.*\.([a-z]{2,3})(\/[a-z0-9]+|\/?|)\/?$/mi', $url))) {
-            throw new WrongParameter(sprintf('The Url %s is not valid', $url));
         }
     }
 }

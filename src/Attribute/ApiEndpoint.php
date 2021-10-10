@@ -16,7 +16,7 @@ final class ApiEndpoint
         $this->apiEndpoint = $apiEndpoint;
     }
 
-    public function getMethod(): string
+    public function getApiEndpoint(): string
     {
         return $this->apiEndpoint;
     }
