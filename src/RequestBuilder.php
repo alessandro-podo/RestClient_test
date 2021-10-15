@@ -6,6 +6,7 @@ namespace RestClient;
 
 use ReflectionClass;
 use RestClient\Attribute\ApiEndpoint;
+use RestClient\Attribute\Cache;
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use RestClient\Attribute\Url;
@@ -38,6 +39,8 @@ class RequestBuilder implements RequestBuilderInterface
     private array $possibleHttpMethods = [];
     private array $possibleTypes = [];
     private ValidatorInterface|RecursiveValidator $validator;
+    private int $cacheExpiresAfter;
+    private float $cacheBeta;
 
     public function __construct(private ParameterBagInterface $parameterBag)
     {
@@ -68,6 +71,58 @@ class RequestBuilder implements RequestBuilderInterface
         return $this;
     }
 
+    public function setCacheBeta(float $cacheBeta): RequestBuilderInterface
+    {
+        $this->cacheBeta = $cacheBeta;
+        return $this;
+    }
+
+    public function setCacheExpiresAfter(int $cacheExpiresAfter): RequestBuilderInterface
+    {
+        $this->cacheExpiresAfter = $cacheExpiresAfter;
+        return $this;
+    }
+
+
+//todo unit
+    private function getCacheExpiresAfter(): int
+    {
+        if (isset($this->cacheExpiresAfter)) {
+            return $this->cacheExpiresAfter;
+        }
+
+        $attributes = $this->reflectEntity->getAttributes(Cache::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (count($attributes) === 1) {
+            $value = $attributes[0]->newInstance()->getCacheExpiresAfter();
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return $this->parameterBag->get('rest_client.cache')["expiresAfter"];
+    }
+
+    private function getCacheBeta(): float
+    {
+
+        if (isset($this->cacheBeta)) {
+            return $this->cacheBeta;
+        }
+
+        $attributes = $this->reflectEntity->getAttributes(Cache::class, \ReflectionAttribute::IS_INSTANCEOF);
+        if (count($attributes) === 1) {
+            $value = $attributes[0]->newInstance()->getCacheBeta();
+
+            if ($value !== null) {
+                return $value;
+            }
+        }
+
+        return $this->parameterBag->get('rest_client.cache')["beta"];
+    }
+
+
     /**
      * @throws OverrideExistingParameter
      */
@@ -91,7 +146,9 @@ class RequestBuilder implements RequestBuilderInterface
     {
         $request = (new Request())
             ->setHttpMethod($this->getHttpMethod())
-            ->setUrl($this->getUrl());
+            ->setUrl($this->getUrl())
+            ->setCacheExpiresAfter($this->getCacheExpiresAfter())
+            ->setCacheBeta($this->getCacheBeta());
 
         if ('http-basic' === $this->getAuthentication()->getAuthenticationMethod()) {
             $request->setAuthBasic($this->getAuthentication()->getCredentials());

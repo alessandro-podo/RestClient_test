@@ -17,6 +17,13 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
         $treeBuilder = new TreeBuilder('rest_client');
         $treeBuilder->getRootNode()
             ->children()
+            ->scalarNode('namespacePräfix')->defaultValue('RestClient')->end()
+            ->arrayNode('cache')
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode("expiresAfter")->defaultValue(0)->end()
+            ->floatNode("beta")->defaultValue(1.0)->info("higher values mean earlier recompute. 0 to disable early recompute. INF to force an immediate recompute")->end()
+            ->end()->end()
             ->arrayNode('connections')
             ->useAttributeAsKey('name')
             ->arrayPrototype()

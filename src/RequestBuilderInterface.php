@@ -16,4 +16,8 @@ interface RequestBuilderInterface
     public function addHeader(string $fieldName, string $fieldValue, bool $exception = true): self;
 
     public function getRequest(): Request;
+
+    public function setCacheExpiresAfter(int $cacheDuration): self;
+
+    public function setCacheBeta(float $cacheBeta): self;
 }

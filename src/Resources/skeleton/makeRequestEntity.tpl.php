@@ -3,12 +3,18 @@
 namespace <?= $namespace ?>;
 
 use RestClient\Attribute\ApiEndpoint;
+<?php if ($cacheIsSet): ?>
+    use RestClient\Attribute\Cache;
+<?php endif; ?>
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[HttpMethod(HttpMethod::<?= $method ?>)]
 #[ApiEndpoint('<?= $endpoint ?>')]
+<?php if ($cacheIsSet): ?>
+    #[Cache(cacheExpiresAfter: <?= $cacheExpiresAfter ?>,cacheBeta: <?= $cacheBeta ?>)]
+<?php endif; ?>
 class <?= $class_name ?>
 
 {

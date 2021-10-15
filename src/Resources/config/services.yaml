@@ -7,7 +7,7 @@ services:
   RestClient\RequestBuilderInterface: '@request.builder'
 
   make.entity:
-    class: RestClient\Maker\MakeEntity
+    class: RestClient\Maker\MakeRequestEntity
     arguments:
       $parameterBag: '@parameter_bag'
     tags:

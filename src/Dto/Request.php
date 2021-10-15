@@ -9,6 +9,9 @@ class Request
     private string $httpMethod;
     private string $url;
 
+    private int $cacheExpiresAfter;
+    private float $cacheBeta;
+
     private ?array $auth_basic = null;
     private ?array $headers = null;
     private ?array $query = null;
@@ -35,6 +38,28 @@ class Request
     {
         $this->url = $url;
 
+        return $this;
+    }
+
+    public function getCacheExpiresAfter(): int
+    {
+        return $this->cacheExpiresAfter;
+    }
+
+    public function setCacheExpiresAfter(int $cacheExpiresAfter): Request
+    {
+        $this->cacheExpiresAfter = $cacheExpiresAfter;
+        return $this;
+    }
+
+    public function getCacheBeta(): float
+    {
+        return $this->cacheBeta;
+    }
+
+    public function setCacheBeta(float $cacheBeta): Request
+    {
+        $this->cacheBeta = $cacheBeta;
         return $this;
     }
 

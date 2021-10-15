@@ -73,7 +73,8 @@ final class RequestBuilderTest extends TestCase
     public function testGetRequest($entity, $authentication, $addHeaders, $assertion, $headers, $json, $httpMethod, $query, $url, $authBasic, $parameterBagReturn): void
     {
         $this->parameterBag
-            ->method('get')->willReturn($parameterBagReturn);
+            #->method('get')->willReturn($parameterBagReturn);
+            ->method('get')->willReturnMap($parameterBagReturn);
 
         if (is_string($assertion) and class_exists($assertion)) {
             $this->expectException($assertion);
@@ -115,30 +116,54 @@ final class RequestBuilderTest extends TestCase
     {
         $parameterBag = [
             "badEndpoint1" => [
-                "url" => 'https://google.de',
+                'rest_client.connections' => [
+                    "badEndpoint1" => [
+                        "url" => 'https://google.de',
+                    ]
+                ],
+                'rest_client.cache' => [
+                    "expiresAfter" => 1,
+                    "beta" => 1.0
+                ]
             ],
             "badEndpoint2" => [
-                "url" => 'https://google.de',
-                "username" => "user",
-                "password" => null
+                'rest_client.connections' => [
+                    "badEndpoint2" => [
+                        "url" => 'https://google.de',
+                        "username" => "user",
+                        "password" => null
+                    ]
+                ]
             ],
             "badEndpoint3" => [
-                "url" => 'https://google.de',
-                "username" => "user",
-                "password" => "pass",
-                "keyField" => "field",
-                "keyValue" => "value"
+                'rest_client.connections' => [
+                    "badEndpoint3" => [
+                        "url" => 'https://google.de',
+                        "username" => "user",
+                        "password" => "pass",
+                        "keyField" => "field",
+                        "keyValue" => "value"
+                    ]
+                ]
             ],
             "okEndpoint1" => [
-                "url" => 'https://google.de',
-                "username" => "user",
-                "password" => "pass",
+                'rest_client.connections' => [
+                    "okEndpoint1" => [
+                        "url" => 'https://google.de',
+                        "username" => "user",
+                        "password" => "pass",
+                    ]
+                ]
             ],
             "okEndpoint2" => [
-                "url" => 'https://google.de',
-                "keyField" => "field",
-                "keyValue" => "value"
-            ]
+                'rest_client.connections' => [
+                    "okEndpoint2" => [
+                        "url" => 'https://google.de',
+                        "keyField" => "field",
+                        "keyValue" => "value"
+                    ]
+                ]
+            ],
         ];
         return [
             'EntityMissingId' => [

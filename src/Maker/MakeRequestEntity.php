@@ -13,6 +13,7 @@ use Symfony\Bundle\MakerBundle\Maker\AbstractMaker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -49,7 +50,9 @@ final class MakeRequestEntity extends AbstractMaker
             ->addArgument('endpointUrl', InputArgument::REQUIRED, 'Wie ist die relative URL des Endpoints?')
             ->addArgument('apiEndpoint', InputArgument::OPTIONAL, 'Welchen Endpoint Betrifft es?')
             ->addArgument('apiMethod', InputArgument::OPTIONAL, 'Welche HTTP Methode soll verwendent werden?')
-            ->setHelp('Create a RequestEntity');
+            ->addOption('cacheExpiresAfter', ['cea'], InputOption::VALUE_OPTIONAL, 'Sekunden wie lange der Cache gültig sein soll für den Request', $this->parameterBag->get('rest_client.cache')["expiresAfter"])
+            ->addOption('cacheBeta', ['cb'], InputOption::VALUE_OPTIONAL, 'recompute for the Cache', $this->parameterBag->get('rest_client.cache')["beta"])
+            ->setHelp('Create a RequestEntity. If one Cache Parameter is set, the Attribute will be written and use default parameter from the Config');
 
         $inputConf->setArgumentAsNonInteractive('apiEndpoint');
         $inputConf->setArgumentAsNonInteractive('apiMethod');
@@ -96,6 +99,44 @@ final class MakeRequestEntity extends AbstractMaker
             $input->setArgument('apiEndpoint', $io->askQuestion($question));
         }
 
+        if (!is_numeric($input->getOption('cacheBeta'))) {
+            $argument = $command->getDefinition()->getOption('cacheBeta');
+
+            $io->error('Ihr übergebener Parameter, war kein Numerischer Wert');
+            $question = new Question($argument->getDescription());
+            $question->setValidator(function ($answer) {
+                if (!is_numeric($answer)) {
+                    throw new \RuntimeException(
+                        'Die Eingabe muss numerisch sein'
+                    );
+                }
+
+                return $answer;
+            });
+            $question->setMaxAttempts(3);
+
+            $input->setOption('cacheBeta', $io->askQuestion($question));
+        }
+
+        if (!is_numeric($input->getOption('cacheExpiresAfter'))) {
+            $argument = $command->getDefinition()->getOption('cacheExpiresAfter');
+
+            $io->error('Ihr übergebener Parameter, war kein Numerischer Wert');
+            $question = new Question($argument->getDescription());
+            $question->setValidator(function ($answer) {
+                if (!is_numeric($answer)) {
+                    throw new \RuntimeException(
+                        'Die Eingabe muss numerisch sein'
+                    );
+                }
+
+                return $answer;
+            });
+            $question->setMaxAttempts(3);
+
+            $input->setOption('cacheExpiresAfter', $io->askQuestion($question));
+        }
+
         while (true) {
             $newProperty = $this->askForNewProperty($io);
 
@@ -112,6 +153,11 @@ final class MakeRequestEntity extends AbstractMaker
         $endpointUrl = $input->getArgument('endpointUrl');
         $apiEndpoint = $input->getArgument('apiEndpoint');
         $apiMethod = strtoupper($input->getArgument('apiMethod'));
+        $cacheBeta = $input->getOption('cacheBeta');
+        $cacheExpiresAfter = $input->getOption('cacheExpiresAfter');
+
+        $cacheIsSet = (!is_bool($input->getParameterOption('--cacheBeta')) or !is_bool($input->getParameterOption('--cacheExpiresAfter')));
+
         if (!in_array($apiMethod, $this->possibleMethods)) {
             $io->error('You must use one of these Methods ' . implode(',', $this->possibleMethods));
             return Command::FAILURE;
@@ -132,7 +178,7 @@ final class MakeRequestEntity extends AbstractMaker
 
         $formClassNameDetails = $generator->createClassNameDetails(
             ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
-            'RestClient\\' . implode("\\", $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
             'Request'
         );
 
@@ -142,6 +188,9 @@ final class MakeRequestEntity extends AbstractMaker
             [
                 'endpoint' => $apiEndpoint,
                 'method' => $apiMethod,
+                'cacheBeta' => $cacheBeta,
+                'cacheExpiresAfter' => $cacheExpiresAfter,
+                'cacheIsSet' => $cacheIsSet,
                 'properties' => $this->fields
             ]
         );
