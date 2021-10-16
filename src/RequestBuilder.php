@@ -362,7 +362,6 @@ class RequestBuilder implements RequestBuilderInterface
     private function addQuery(string $fieldName, mixed $fieldValue, bool $exception = true): void
     {
         if (isset($this->query[$fieldName]) && $exception) {
-            dump($this->query);
             throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
         }
         $this->query[$fieldName] = $fieldValue;

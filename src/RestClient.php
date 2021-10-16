@@ -28,7 +28,9 @@ class RestClient implements RestClientInterface
 
     public function __construct(private HttpClientInterface $httpClient, private SerializerInterface $serializer, private ?LoggerInterface $logger)
     {
-//TODO: überlegen, ob man via Event den logger anpasst oder via Config falls das geht
+        //TODO: überlegen, ob man via Event den logger anpasst oder via Config falls das geht
+        //TODO: Cachen
+        //TODO: Recursive
     }
 
     /*
@@ -104,7 +106,7 @@ class RestClient implements RestClientInterface
                 $handler = new $handler($this->requests[$id], $response);
             } elseif (str_starts_with((string)$response->getStatusCode(), '2')) {
                 $handler = $this->requests[$id]->getSuccessHandler();
-                $handler = new $handler($this->requests[$id], $response);
+                $handler = new $handler($this->requests[$id], $response, $this->serializer);
             } elseif (str_starts_with((string)$response->getStatusCode(), '3')) {
                 $handler = $this->requests[$id]->getRedirectionHandler();
                 $handler = new $handler($this->requests[$id], $response);
@@ -115,13 +117,12 @@ class RestClient implements RestClientInterface
                 $handler = $this->requests[$id]->getServerHandler();
                 $handler = new $handler($this->requests[$id], $response);
             }
-
             if ($handler === null) {
                 throw new \RuntimeException('No Handler');
             }
 
             if (!$handler instanceof HandlerInterface) {
-                throw new \RuntimeException('Handler must implement ' . HandlerInterface::class);
+                throw new \RuntimeException(sprintf('Handler ( %s ) must implement %s', get_class($handler), HandlerInterface::class));
             }
 
             if ($handler->getResult() instanceof Error) {

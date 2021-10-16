@@ -176,14 +176,24 @@ final class MakeRequestEntity extends AbstractMaker
 
         $splitedUrlParts = $this->splitUrl($endpointUrl);
 
-        $formClassNameDetails = $generator->createClassNameDetails(
+        $formClassNameDetailsEntity = $generator->createClassNameDetails(
             ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
             $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
             'Request'
         );
+        $formClassNameDetailsDto = $generator->createClassNameDetails(
+            ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
+            'Dto'
+        );
+        $formClassNameDetailsSuccessHandler = $generator->createClassNameDetails(
+            ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
+            'SuccessHandler'
+        );
 
         $generator->generateClass(
-            $formClassNameDetails->getFullName(),
+            $formClassNameDetailsEntity->getFullName(),
             __DIR__ . '/../Resources/skeleton/makeRequestEntity.tpl.php',
             [
                 'endpoint' => $apiEndpoint,
@@ -191,8 +201,26 @@ final class MakeRequestEntity extends AbstractMaker
                 'cacheBeta' => $cacheBeta,
                 'cacheExpiresAfter' => $cacheExpiresAfter,
                 'cacheIsSet' => $cacheIsSet,
-                'properties' => $this->fields
+                'properties' => $this->fields,
+                'url' => $endpointUrl,
+                'successHandler' => $formClassNameDetailsSuccessHandler->getRelativeName()
             ]
+        );
+
+        //SuccessHandler
+        $generator->generateClass(
+            $formClassNameDetailsSuccessHandler->getFullName(),
+            __DIR__ . '/../Resources/skeleton/makeSuccessHandler.tpl.php',
+            [
+                'dtoName' => $formClassNameDetailsDto->getRelativeName()
+            ]
+        );
+
+        //dto
+        $generator->generateClass(
+            $formClassNameDetailsDto->getFullName(),
+            __DIR__ . '/../Resources/skeleton/makeDto.tpl.php',
+            []
         );
 
 
@@ -208,7 +236,7 @@ final class MakeRequestEntity extends AbstractMaker
         $splitUrl = [];
 
         foreach ($splitUrlParts as $splitUrlPart) {
-            if (strlen($splitUrlPart) > 0) {
+            if (strlen($splitUrlPart) > 0 and !str_starts_with($splitUrlPart, "{") and !str_ends_with($splitUrlPart, "}")) {
                 $splitUrl["likeInput"][] = $splitUrlPart;
                 $splitUrl["forClassName"][] = ucfirst(strtolower($splitUrlPart));
             }

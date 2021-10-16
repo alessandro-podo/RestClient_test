@@ -9,11 +9,11 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SuccessHandler implements HandlerInterface
 {
-    public function __construct(private Request $request, private ResponseInterface $response, ?SerializerInterface $serializer = null)
+    public function __construct(protected Request $request, protected ResponseInterface $response, protected ?SerializerInterface $serializer = null)
     {
     }
 
-    public function getResult(): ?array
+    public function getResult(): object|array|null
     {
         try {
             return $this->response->toArray();
