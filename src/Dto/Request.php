@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace RestClient\Dto;
 
+use RestClient\DefaultHandler\ClientHandler;
+use RestClient\DefaultHandler\InformationalHandler;
+use RestClient\DefaultHandler\RedirectionHandler;
+use RestClient\DefaultHandler\ServerHandler;
+use RestClient\DefaultHandler\SuccessHandler;
+
 class Request
 {
     private string $httpMethod;
     private string $url;
+    private int $id;
 
     private int $cacheExpiresAfter;
     private float $cacheBeta;
@@ -16,6 +23,12 @@ class Request
     private ?array $headers = null;
     private ?array $query = null;
     private ?array $json = null;
+
+    private string $informationalHandler = InformationalHandler::class;
+    private string $successHandler = SuccessHandler::class;
+    private string $redirectionHandler = RedirectionHandler::class;
+    private string $clientHandler = ClientHandler::class;
+    private string $serverHandler = ServerHandler::class;
 
     public function getHttpMethod(): string
     {
@@ -38,6 +51,17 @@ class Request
     {
         $this->url = $url;
 
+        return $this;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): Request
+    {
+        $this->id = $id;
         return $this;
     }
 
@@ -140,4 +164,61 @@ class Request
 
         return $this;
     }
+
+    public function getInformationalHandler(): string
+    {
+        return $this->informationalHandler;
+    }
+
+    public function setInformationalHandler(string $informationalHandler): Request
+    {
+        $this->informationalHandler = $informationalHandler;
+        return $this;
+    }
+
+    public function getSuccessHandler(): string
+    {
+        return $this->successHandler;
+    }
+
+    public function setSuccessHandler(string $successHandler): Request
+    {
+        $this->successHandler = $successHandler;
+        return $this;
+    }
+
+    public function getRedirectionHandler(): string
+    {
+        return $this->redirectionHandler;
+    }
+
+    public function setRedirectionHandler(string $redirectionHandler): Request
+    {
+        $this->redirectionHandler = $redirectionHandler;
+        return $this;
+    }
+
+    public function getClientHandler(): string
+    {
+        return $this->clientHandler;
+    }
+
+    public function setClientHandler(string $clientHandler): Request
+    {
+        $this->clientHandler = $clientHandler;
+        return $this;
+    }
+
+    public function getServerHandler(): string
+    {
+        return $this->serverHandler;
+    }
+
+    public function setServerHandler(string $serverHandler): Request
+    {
+        $this->serverHandler = $serverHandler;
+        return $this;
+    }
+
+
 }

@@ -4,7 +4,16 @@ services:
     arguments:
       $parameterBag: '@parameter_bag'
 
-  RestClient\RequestBuilderInterface: '@request.builder'
+  RestClient\Interfaces\RequestBuilderInterface: '@request.builder'
+
+  restclient:
+    class: RestClient\RestClient
+    arguments:
+      $httpClient: '@http_client'
+      $serializer: '@serializer'
+      $logger: '@?monolog.logger.http_client'
+
+  RestClient\Interfaces\RestClientInterface: '@restclient'
 
   make.entity:
     class: RestClient\Maker\MakeRequestEntity

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace RestClient;
+namespace RestClient\Interfaces;
 
 use RestClient\Dto\Request;
-use RestClient\Interfaces\Authenticator;
+use RestClient\RequestBuilder;
 
 interface RequestBuilderInterface
 {

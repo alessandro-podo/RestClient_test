@@ -28,7 +28,7 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
             ->useAttributeAsKey('name')
             ->arrayPrototype()
             ->children()
-            ->scalarNode('url')
+            ->scalarNode('baseurl')
             ->isRequired()
             ->cannotBeEmpty()
             ->end()

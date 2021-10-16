@@ -10,6 +10,7 @@ class Type
     const HEADER = 'HEADER';
     const JSON = 'JSON';
     const QUERY = 'QUERY';
+    const URLREPLACE = 'URLREPLACE';
 
     private string $type;
 

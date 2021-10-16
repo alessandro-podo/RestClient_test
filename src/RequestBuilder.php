@@ -7,6 +7,7 @@ namespace RestClient;
 use ReflectionClass;
 use RestClient\Attribute\ApiEndpoint;
 use RestClient\Attribute\Cache;
+use RestClient\Attribute\Handler;
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
 use RestClient\Attribute\Url;
@@ -18,6 +19,7 @@ use RestClient\Exceptions\MissingParameter;
 use RestClient\Exceptions\OverrideExistingParameter;
 use RestClient\Exceptions\WrongParameter;
 use RestClient\Interfaces\Authenticator;
+use RestClient\Interfaces\RequestBuilderInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Validator\Constraints\Url as ConstraintsUrl;
 use Symfony\Component\Validator\Validation;
@@ -27,12 +29,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RequestBuilder implements RequestBuilderInterface
 {
     private Authenticator $authentication;
-    private string $url;
-    private string $method;
     private object $entity;
     private array $headers = [];
     private array $query = [];
     private array $json = [];
+
+    private int $id = 0;
+    private ?Request $request = null;
 
     private ReflectionClass $reflectEntity;
 
@@ -65,6 +68,7 @@ class RequestBuilder implements RequestBuilderInterface
 
     public function setEntity(object $entity): self
     {
+        $this->reset();
         $this->entity = $entity;
         $this->reflectEntity = new ReflectionClass(\get_class($entity));
 
@@ -144,11 +148,32 @@ class RequestBuilder implements RequestBuilderInterface
      */
     public function getRequest(): Request
     {
+        if ($this->request instanceof Request) {
+            return $this->request;
+        }
         $request = (new Request())
             ->setHttpMethod($this->getHttpMethod())
             ->setUrl($this->getUrl())
             ->setCacheExpiresAfter($this->getCacheExpiresAfter())
-            ->setCacheBeta($this->getCacheBeta());
+            ->setCacheBeta($this->getCacheBeta())
+            ->setId($this->newRequestId());
+
+        $handler = $this->getHandlerFromHandlerAttribute();
+        if ($handler !== null and $handler->getClientHandler() !== null) {
+            $request->setClientHandler($handler->getClientHandler());
+        }
+        if ($handler !== null and $handler->getInformationalHandler() !== null) {
+            $request->setInformationalHandler($handler->getInformationalHandler());
+        }
+        if ($handler !== null and $handler->getServerHandler() !== null) {
+            $request->setServerHandler($handler->getServerHandler());
+        }
+        if ($handler !== null and $handler->getSuccessHandler() !== null) {
+            $request->setSuccessHandler($handler->getSuccessHandler());
+        }
+        if ($handler !== null and $handler->getRedirectionHandler() !== null) {
+            $request->setRedirectionHandler($handler->getRedirectionHandler());
+        }
 
         if ('http-basic' === $this->getAuthentication()->getAuthenticationMethod()) {
             $request->setAuthBasic($this->getAuthentication()->getCredentials());
@@ -171,6 +196,7 @@ class RequestBuilder implements RequestBuilderInterface
             $request->addJson($key, $value);
         }
 
+        $this->request = $request;
         return $request;
     }
 
@@ -201,6 +227,16 @@ class RequestBuilder implements RequestBuilderInterface
     private function getAuthenticationFromAuthenticatorAttribute(): ?Authenticator
     {
         $attributes = $this->reflectEntity->getAttributes(Authenticator::class, \ReflectionAttribute::IS_INSTANCEOF);
+
+        if (1 !== \count($attributes)) {
+            return null;
+        }
+        return $attributes[0]->newInstance();
+    }
+
+    private function getHandlerFromHandlerAttribute(): ?Handler
+    {
+        $attributes = $this->reflectEntity->getAttributes(Handler::class, \ReflectionAttribute::IS_INSTANCEOF);
 
         if (1 !== \count($attributes)) {
             return null;
@@ -326,6 +362,7 @@ class RequestBuilder implements RequestBuilderInterface
     private function addQuery(string $fieldName, mixed $fieldValue, bool $exception = true): void
     {
         if (isset($this->query[$fieldName]) && $exception) {
+            dump($this->query);
             throw new OverrideExistingParameter(sprintf('You can not override the %s Value', $fieldName));
         }
         $this->query[$fieldName] = $fieldValue;
@@ -348,18 +385,15 @@ class RequestBuilder implements RequestBuilderInterface
      */
     private function getUrl(): string
     {
-        $url = null;
-        if ($this->getUrlFromUrlAttribute() !== null) {
-            $url = $this->getUrlFromUrlAttribute();
+        $url = "";
+        if ($this->getUrlSuffixFromUrlAttribute() === null) {
+            throw new MissingParameter('A UrlSuffix must be set in the URL Attribute.');
         }
-        if ($this->getUrlFromApiAttribute() !== null) {
-            $url = $this->getUrlFromApiAttribute();
-        }
-
-        if (is_null($url)) {
-            throw new MissingParameter('A Url must be set.');
+        if ($this->getBaseUrlFromApiAttribute() === null) {
+            throw new MissingParameter('A BaseUrl must be set.');
         }
 
+        $url = $this->getBaseUrlFromApiAttribute() . $this->getUrlSuffixFromUrlAttribute();
         $violations = $this->validator->validate($url, new ConstraintsUrl([
             'protocols' => ['http', 'https'],
         ]));
@@ -371,7 +405,7 @@ class RequestBuilder implements RequestBuilderInterface
         return $url;
     }
 
-    private function getUrlFromUrlAttribute(): ?string
+    private function getUrlSuffixFromUrlAttribute(): ?string
     {
         $attributes = $this->reflectEntity->getAttributes(Url::class, \ReflectionAttribute::IS_INSTANCEOF);
 
@@ -379,10 +413,22 @@ class RequestBuilder implements RequestBuilderInterface
             return null;
         }
 
-        return $attributes[0]->newInstance()->getUrl();
+        return $this->hydrateUrlWithEntity($attributes[0]->newInstance()->getUrl());
     }
 
-    private function getUrlFromApiAttribute(): ?string
+
+    private function hydrateUrlWithEntity(string $url): string
+    {
+        if (isset($this->getValuesFromEntity()[Type::URLREPLACE]) and is_array($this->getValuesFromEntity()[Type::URLREPLACE])) {
+            foreach ($this->getValuesFromEntity()[Type::URLREPLACE] as $key => $value) {
+                $url = str_replace('{' . $key . '}', $value, $url);
+            }
+        }
+
+        return $url;
+    }
+
+    private function getBaseUrlFromApiAttribute(): ?string
     {
         $attributes = $this->reflectEntity->getAttributes(ApiEndpoint::class, \ReflectionAttribute::IS_INSTANCEOF);
 
@@ -390,7 +436,7 @@ class RequestBuilder implements RequestBuilderInterface
             return null;
         }
 
-        return $this->getConnection($attributes[0]->newInstance()->getApiEndpoint())["url"];
+        return $this->getConnection($attributes[0]->newInstance()->getApiEndpoint())["baseurl"];
     }
 
     /**
@@ -426,5 +472,33 @@ class RequestBuilder implements RequestBuilderInterface
                 }
             }
         }
+    }
+
+    private function newRequestId(): int
+    {
+        return $this->id++;
+    }
+
+    private function reset(bool $id = false): void
+    {
+        unset($this->authentication);
+        unset($this->url);
+        unset($this->method);
+        unset($this->entity);
+
+        $this->headers = [];
+        $this->query = [];
+        $this->json = [];
+
+        if ($id) {
+            $this->id = 0;
+        }
+
+        unset($this->reflectEntity);
+
+        unset($this->cacheExpiresAfter);
+        unset($this->cacheBeta);
+
+        $this->request = null;
     }
 }
