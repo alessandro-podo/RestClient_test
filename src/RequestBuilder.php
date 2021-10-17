@@ -482,7 +482,8 @@ class RequestBuilder implements RequestBuilderInterface
     //falls doch wiederholung geben sollte, noch mehr parameter zum hashen dazu nehmen
     private function newRequestId(): string
     {
-        return sha1($this->getHttpMethod() . $this->getUrl());
+        $query = $this->getValuesFromEntity()[Type::QUERY] ?? [];
+        return sha1($this->getHttpMethod() . $this->getUrl() . implode(",", $query));
     }
 
     private function reset(): void
