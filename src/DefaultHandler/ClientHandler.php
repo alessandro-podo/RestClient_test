@@ -4,18 +4,14 @@ namespace RestClient\DefaultHandler;
 
 use RestClient\Dto\Http\ClientError;
 use RestClient\Dto\Http\Error;
-use RestClient\Dto\Request;
 use RestClient\Interfaces\HandlerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
+use RuntimeException;
 
-class ClientHandler implements HandlerInterface
+class ClientHandler extends HandlerInterface
 {
-
-    public function __construct(protected Request $request, protected ResponseInterface $response, protected ?SerializerInterface $serializer = null)
-    {
-    }
-
+    /**
+     * @throws RuntimeException
+     */
     public function getResult(): Error
     {
         try {
@@ -24,6 +20,6 @@ class ClientHandler implements HandlerInterface
             return new ClientError($throwable->getMessage(), $throwable->getCode(), $this->request, $throwable);
         }
 
-        throw new \RuntimeException('There should be an Error');
+        throw new RuntimeException('There should be an Error');
     }
 }

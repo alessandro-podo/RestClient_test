@@ -6,5 +6,6 @@ namespace <?= $namespace ?>;
 
 class <?= $class_name ?>
 {
+use StatusCode;
 
 }

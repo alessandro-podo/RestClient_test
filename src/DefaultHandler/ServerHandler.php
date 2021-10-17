@@ -4,18 +4,10 @@ namespace RestClient\DefaultHandler;
 
 use RestClient\Dto\Http\Error;
 use RestClient\Dto\Http\ServerError;
-use RestClient\Dto\Request;
 use RestClient\Interfaces\HandlerInterface;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
-class ServerHandler implements HandlerInterface
+class ServerHandler extends HandlerInterface
 {
-
-    public function __construct(protected Request $request, protected ResponseInterface $response, protected ?SerializerInterface $serializer = null)
-    {
-    }
-
     public function getResult(): Error
     {
         try {

@@ -4,14 +4,13 @@ namespace RestClient\Helper;
 
 use Psr\Log\LoggerInterface;
 use RestClient\Dto\Request;
-use RestClient\Exceptions\WrongParameter;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class LoggerHelper
 {
     private bool $loggen;
-    private string $logLevel;
+    private array $logLevel;
 
     public function __construct(
         private LoggerInterface       $logger,
@@ -35,8 +34,8 @@ class LoggerHelper
 
     private function sendLog(array $request, array $response): void
     {
-
-        $this->logger->log($this->logLevel, 'Request: ' . $request['url'], [
+        $loglevel = substr($response["statusCode"], 0, 1) . "xx";
+        $this->logger->log($this->logLevel[$loglevel], '(' . $response["statusCode"] . ') ' . $request['url'], [
             "request" => $request,
             'response' => $response
         ]);
@@ -73,20 +72,6 @@ class LoggerHelper
 
         return $this;
     }
-
-    /**
-     * @throws WrongParameter
-     */
-    public function setLogLevel(string $logLevel): self
-    {
-        if (!method_exists($this->logger, $logLevel)) {
-            throw new WrongParameter(sprintf('The %s Loglevel dont exist', $logLevel));
-        }
-        $this->logLevel = $logLevel;
-
-        return $this;
-    }
-
 
     public function reset(): self
     {

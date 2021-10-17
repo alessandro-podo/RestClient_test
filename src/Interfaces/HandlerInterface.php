@@ -5,11 +5,23 @@ namespace RestClient\Interfaces;
 
 use RestClient\Dto\Request;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-interface HandlerInterface
+abstract class HandlerInterface
 {
-    public function __construct(Request $request, ResponseInterface $response, ?SerializerInterface $serializer = null);
+    public function __construct(protected Request $request, protected ResponseInterface $response, protected ?SerializerInterface $serializer = null)
+    {
+    }
 
-    public function getResult();
+    abstract public function getResult(): array|object|null;
+
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    public function getStatusCode(): int
+    {
+        return $this->response->getStatusCode();
+    }
 }

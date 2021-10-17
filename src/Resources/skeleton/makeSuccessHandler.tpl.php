@@ -11,7 +11,7 @@ class <?= $class_name ?> extends SuccessHandler
 public function getResult(): <?= $dtoName ?>
 {
 try {
-return $this->serializer->denormalize($this->response->toArray(), <?= $dtoName ?>::class);
+return $this->serializer->denormalize($this->response->toArray(), <?= $dtoName ?>::class)->setStatusCode($this->response->getStatusCode());
 } catch (\Throwable $throwable) {
 
 }

@@ -36,7 +36,6 @@ class RestClient implements RestClientInterface
     {
         //TODO: Cachen
         //TODO: Recursive
-        //TODO: handler statusCode auslesbar machen
     }
 
     /*
@@ -150,5 +149,19 @@ class RestClient implements RestClientInterface
             $this->loggerHelper->log($this->requests[$id], $handler->getResult());
 
         }
+    }
+
+    public function setLoggen(bool $loggen): self
+    {
+        $this->loggerHelper->setLoggen($loggen);
+
+        return $this;
+    }
+
+    public function reset(): self
+    {
+        $this->loggerHelper->reset();
+
+        return $this;
     }
 }
