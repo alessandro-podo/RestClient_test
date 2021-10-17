@@ -112,9 +112,10 @@ class RestClient implements RestClientInterface
                 $handler = new $handler($this->requests[$id], $response);
             } elseif (str_starts_with((string)$response->getStatusCode(), '2')) {
                 if ($this->requests[$id]->getCacheBeta() !== null and $this->requests[$id]->getCacheExpiresAfter() !== null) {
+                    #dump($id);
                     $handler = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $response) {
                         $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
-
+#dump($this->requests[$id]->getCacheExpiresAfter());
                         $handler = $this->requests[$id]->getSuccessHandler();
                         return new $handler($this->requests[$id], $response, $this->serializer);
                     }, $this->requests[$id]->getCacheBeta());

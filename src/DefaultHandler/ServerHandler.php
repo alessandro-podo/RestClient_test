@@ -13,7 +13,7 @@ class ServerHandler extends HandlerInterface
         try {
             $this->response->toArray();
         } catch (\Throwable $throwable) {
-            return new ServerError($throwable->getMessage(), $throwable->getCode(), $this->request, $throwable);
+            return (new ServerError($throwable->getMessage(), $throwable->getCode(), $this->request, $throwable))->setStatusCode($this->response->getStatusCode());
         }
 
         throw new \RuntimeException('There should be an Error');

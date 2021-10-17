@@ -2,16 +2,18 @@
 
 namespace RestClient\DefaultHandler;
 
+use RestClient\Dto\RestClientResponse;
 use RestClient\Interfaces\HandlerInterface;
+use RestClient\Interfaces\RestClientResponseInterface;
 
 class SuccessHandler extends HandlerInterface
 {
-    public function getResult(): object|array|null
+    public function getResult(): RestClientResponseInterface
     {
         try {
-            return $this->response->toArray();
+            return (new RestClientResponse())->setBody($this->response->toArray())->setStatusCode($this->response->getStatusCode());
         } catch (\Throwable $throwable) {
-            return null;
+            return (new RestClientResponse())->setBody(null)->setStatusCode($this->response->getStatusCode());
         }
     }
 

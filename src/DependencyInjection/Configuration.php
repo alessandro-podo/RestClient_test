@@ -28,7 +28,7 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
             ->scalarNode('1xx')->defaultValue('info')->end()
             ->scalarNode('2xx')->defaultValue('info')->end()
             ->scalarNode('3xx')->defaultValue('error')->end()
-            ->scalarNode('4xx')->defaultValue('critical')->end()
+            ->scalarNode('4xx')->defaultValue('error')->end()
             ->scalarNode('5xx')->defaultValue('critical')->end()
             ->end()->end()
             ->end()->end()

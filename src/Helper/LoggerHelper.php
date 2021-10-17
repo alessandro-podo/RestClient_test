@@ -4,7 +4,9 @@ namespace RestClient\Helper;
 
 use Psr\Log\LoggerInterface;
 use RestClient\Dto\Request;
+use RestClient\Interfaces\RestClientResponseInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class LoggerHelper
@@ -23,7 +25,7 @@ class LoggerHelper
 
     }
 
-    public function log(Request $request, object $response): void
+    public function log(Request $request, RestClientResponseInterface $response): void
     {
         if (!$this->loggen) {
             return;
@@ -42,12 +44,16 @@ class LoggerHelper
 
     }
 
-    private function convertMessage(object $message): array
+    private function convertMessage(RestClientResponseInterface|Request $message): array
     {
         try {
-            $array = $this->serializer->normalize($message, 'array');
+            //context, dass die Exception nicht normalized wird, sonst wird eine Exception geworden
+            $array = $this->serializer->normalize($message, 'array', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['previous']]);
         } catch (\Throwable $throwable) {
-            $array = [$throwable->getMessage()];
+            $array = [
+                "body" => $throwable->getMessage(),
+                "statusCode" => $message->getStatusCode()
+            ];
         }
 
         return $this->cleanArray($array);

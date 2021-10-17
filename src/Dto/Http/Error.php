@@ -3,21 +3,22 @@
 namespace RestClient\Dto\Http;
 
 use RestClient\Dto\Request;
+use RestClient\Interfaces\RestClientResponseInterface;
 use Throwable;
 
-class Error
+class Error extends RestClientResponseInterface
 {
 
-    public function __construct(private $message, private $code, private Request $request, private Throwable $previous)
+    public function __construct(private string $message, private int $code, private Request $request, private Throwable $previous)
     {
     }
 
-    public function getMessage()
+    public function getMessage(): string
     {
         return $this->message;
     }
 
-    public function getCode()
+    public function getCode(): int
     {
         return $this->code;
     }

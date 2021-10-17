@@ -1,8 +1,8 @@
 <?php
 
-namespace RestClient\Traits;
+namespace RestClient\Interfaces;
 
-trait StatusCode
+abstract class RestClientResponseInterface
 {
     private int $statusCode;
 

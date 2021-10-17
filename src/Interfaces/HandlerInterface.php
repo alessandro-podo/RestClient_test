@@ -14,7 +14,7 @@ abstract class HandlerInterface
     {
     }
 
-    abstract public function getResult(): array|object|null;
+    abstract public function getResult(): RestClientResponseInterface;
 
 
     /**
