@@ -29,7 +29,7 @@ class LoggerHelper
             return;
         }
 
-        $this->sendLog(dump($this->convertMessage($request)), $this->convertMessage($response));
+        $this->sendLog($this->convertMessage($request), $this->convertMessage($response));
     }
 
     private function sendLog(array $request, array $response): void
