@@ -2,24 +2,24 @@
 
 namespace RestClient\Interfaces;
 
-use Psr\Log\LoggerInterface;
 use RestClient\Dto\Request;
+use RestClient\Helper\CacheHelper;
+use RestClient\Helper\LoggerHelper;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 interface RestClientInterface
 {
 
-    public function __construct(HttpClientInterface $httpClient, SerializerInterface $serializer, ?LoggerInterface $logger);
+    public function __construct(HttpClientInterface $httpClient, SerializerInterface $serializer, ?LoggerHelper $loggerHelper, ?CacheHelper $cacheHelper);
 
     public function addRequest(Request $request);
 
-    public function sendRequests();
+    public function sendRequests(): self;
 
-    public function iterateErrors();
+    public function iterateErrors(): array;
 
     public function hasErrors(): bool;
 
-    public function iterateResults();
-    #public function setLogger(LoggerInterface $logger);
+    public function iterateResults(): array;
 }

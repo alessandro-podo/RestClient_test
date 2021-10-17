@@ -34,7 +34,6 @@ class RequestBuilder implements RequestBuilderInterface
     private array $query = [];
     private array $json = [];
 
-    private int $id = 0;
     private ?Request $request = null;
 
     private ReflectionClass $reflectEntity;
@@ -87,9 +86,7 @@ class RequestBuilder implements RequestBuilderInterface
         return $this;
     }
 
-
-//todo unit
-    private function getCacheExpiresAfter(): int
+    private function getCacheExpiresAfter(): ?int
     {
         if (isset($this->cacheExpiresAfter)) {
             return $this->cacheExpiresAfter;
@@ -103,11 +100,13 @@ class RequestBuilder implements RequestBuilderInterface
                 return $value;
             }
         }
-
-        return $this->parameterBag->get('rest_client.cache')["expiresAfter"];
+        if ($this->cacheIsSet()) {
+            return $this->parameterBag->get('rest_client.cache')["expiresAfter"];
+        }
+        return null;
     }
 
-    private function getCacheBeta(): float
+    private function getCacheBeta(): ?float
     {
 
         if (isset($this->cacheBeta)) {
@@ -123,9 +122,16 @@ class RequestBuilder implements RequestBuilderInterface
             }
         }
 
-        return $this->parameterBag->get('rest_client.cache')["beta"];
+        if ($this->cacheIsSet()) {
+            return $this->parameterBag->get('rest_client.cache')["beta"];
+        }
+        return null;
     }
 
+    private function cacheIsSet(): bool
+    {
+        return count($this->reflectEntity->getAttributes(Cache::class, \ReflectionAttribute::IS_INSTANCEOF)) === 1;
+    }
 
     /**
      * @throws OverrideExistingParameter
@@ -473,12 +479,13 @@ class RequestBuilder implements RequestBuilderInterface
         }
     }
 
-    private function newRequestId(): int
+    //falls doch wiederholung geben sollte, noch mehr parameter zum hashen dazu nehmen
+    private function newRequestId(): string
     {
-        return $this->id++;
+        return sha1($this->getHttpMethod() . $this->getUrl());
     }
 
-    private function reset(bool $id = false): void
+    private function reset(): void
     {
         unset($this->authentication);
         unset($this->url);
@@ -488,10 +495,6 @@ class RequestBuilder implements RequestBuilderInterface
         $this->headers = [];
         $this->query = [];
         $this->json = [];
-
-        if ($id) {
-            $this->id = 0;
-        }
 
         unset($this->reflectEntity);
 

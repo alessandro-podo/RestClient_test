@@ -12,6 +12,7 @@ rest_client:
             keyField: 'x-api'
             keyValue: 'asdadadasdasdsadsadsadSA'
 ~~~
+php bin/console config:de
 
 # Entity:
 
@@ -22,6 +23,8 @@ rest_client:
 * Url (optional)
 * BasicAuthenticator (optional)
 * TokenAuthenticator (optional)
+
+maker:re:r
 
 ### Atrribute for Property:
 
@@ -41,3 +44,7 @@ try {
     dd($throwable);
 }
 ~~~
+
+in service.yaml to change logger helper.logger:
+class: RestClient\Helper\LoggerHelper arguments:
+$logger: '@monolog.logger.http_client'

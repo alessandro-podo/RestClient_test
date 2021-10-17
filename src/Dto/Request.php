@@ -14,10 +14,10 @@ class Request
 {
     private string $httpMethod;
     private string $url;
-    private int $id;
+    private string $id;
 
-    private int $cacheExpiresAfter;
-    private float $cacheBeta;
+    private ?int $cacheExpiresAfter = null;
+    private ?float $cacheBeta = null;
 
     private ?array $auth_basic = null;
     private ?array $headers = null;
@@ -54,34 +54,34 @@ class Request
         return $this;
     }
 
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function setId(int $id): Request
+    public function setId(string $id): Request
     {
         $this->id = $id;
         return $this;
     }
 
-    public function getCacheExpiresAfter(): int
+    public function getCacheExpiresAfter(): ?int
     {
         return $this->cacheExpiresAfter;
     }
 
-    public function setCacheExpiresAfter(int $cacheExpiresAfter): Request
+    public function setCacheExpiresAfter(?int $cacheExpiresAfter): Request
     {
         $this->cacheExpiresAfter = $cacheExpiresAfter;
         return $this;
     }
 
-    public function getCacheBeta(): float
+    public function getCacheBeta(): ?float
     {
         return $this->cacheBeta;
     }
 
-    public function setCacheBeta(float $cacheBeta): Request
+    public function setCacheBeta(?float $cacheBeta): Request
     {
         $this->cacheBeta = $cacheBeta;
         return $this;

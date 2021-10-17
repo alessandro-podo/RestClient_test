@@ -6,13 +6,34 @@ services:
 
   RestClient\Interfaces\RequestBuilderInterface: '@request.builder'
 
+  helper.logger:
+    class: RestClient\Helper\LoggerHelper
+    arguments:
+      $logger: '@monolog.logger'
+      $serializer: '@serializer'
+      $parameterBag: '@parameter_bag'
+
+  helper.cache:
+    class: RestClient\Helper\CacheHelper
+    arguments:
+      $cache: '@cache.app'
+      $parameterBag: '@parameter_bag'
+
   restclient:
     class: RestClient\RestClient
     arguments:
       $httpClient: '@http_client'
       $serializer: '@serializer'
-      $logger: '@?monolog.logger.http_client'
+      $cacheHelper: '@helper.cache'
+      $loggerHelper: '@helper.logger'
 
+  shortrestclient:
+    class: RestClient\ShortRestClient
+    arguments:
+      $restClient: '@restclient'
+      $requestBuilder: '@request.builder'
+
+  RestClient\ShortRestClient: '@shortrestclient'
   RestClient\Interfaces\RestClientInterface: '@restclient'
 
   make.entity:

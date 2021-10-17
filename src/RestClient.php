@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace RestClient;
 
-use Psr\Log\LoggerInterface;
 use RestClient\Dto\Http\Error;
 use RestClient\Dto\Request;
 use RestClient\Exceptions\MissingParameter;
+use RestClient\Helper\CacheHelper;
+use RestClient\Helper\LoggerHelper;
 use RestClient\Interfaces\HandlerInterface;
 use RestClient\Interfaces\RestClientInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -26,11 +27,16 @@ class RestClient implements RestClientInterface
 
     private bool $errors = false;
 
-    public function __construct(private HttpClientInterface $httpClient, private SerializerInterface $serializer, private ?LoggerInterface $logger)
+    public function __construct(
+        private HttpClientInterface $httpClient,
+        private SerializerInterface $serializer,
+        private ?LoggerHelper       $loggerHelper,
+        private ?CacheHelper        $cacheHelper
+    )
     {
-        //TODO: überlegen, ob man via Event den logger anpasst oder via Config falls das geht
         //TODO: Cachen
         //TODO: Recursive
+        //TODO: handler statusCode auslesbar machen
     }
 
     /*
@@ -105,8 +111,17 @@ class RestClient implements RestClientInterface
                 $handler = $this->requests[$id]->getInformationalHandler();
                 $handler = new $handler($this->requests[$id], $response);
             } elseif (str_starts_with((string)$response->getStatusCode(), '2')) {
+                /*if($this->requests[$id]->getCacheBeta() !== null and $this->requests[$id]->getCacheExpiresAfter() !== null){
+                    $handler = $this->cache->get($id, function (CacheItemInterface $item) use ($id,$response){
+                        $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
+
+                        $handler = $this->requests[$id]->getSuccessHandler();
+                        return new $handler($this->requests[$id], $response, $this->serializer);
+                    },$this->requests[$id]->getCacheBeta());
+                }else{*/
                 $handler = $this->requests[$id]->getSuccessHandler();
                 $handler = new $handler($this->requests[$id], $response, $this->serializer);
+                #}
             } elseif (str_starts_with((string)$response->getStatusCode(), '3')) {
                 $handler = $this->requests[$id]->getRedirectionHandler();
                 $handler = new $handler($this->requests[$id], $response);
@@ -131,6 +146,8 @@ class RestClient implements RestClientInterface
             } else {
                 $this->handledResponsesSuccess[$id] = $handler->getResult();
             }
+
+            $this->loggerHelper->log($this->requests[$id], $handler->getResult());
 
         }
     }
