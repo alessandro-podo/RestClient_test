@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RestClient;
 
-use Psr\Cache\CacheItemInterface;
 use RestClient\Dto\Http\Error;
 use RestClient\Dto\Request;
 use RestClient\Exceptions\MissingParameter;
@@ -111,18 +110,8 @@ class RestClient implements RestClientInterface
                 $handler = $this->requests[$id]->getInformationalHandler();
                 $handler = new $handler($this->requests[$id], $response);
             } elseif (str_starts_with((string)$response->getStatusCode(), '2')) {
-                if ($this->requests[$id]->getCacheBeta() !== null and $this->requests[$id]->getCacheExpiresAfter() !== null) {
-                    #dump($id);
-                    $handler = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $response) {
-                        $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
-#dump($this->requests[$id]->getCacheExpiresAfter());
-                        $handler = $this->requests[$id]->getSuccessHandler();
-                        return new $handler($this->requests[$id], $response, $this->serializer);
-                    }, $this->requests[$id]->getCacheBeta());
-                } else {
-                    $handler = $this->requests[$id]->getSuccessHandler();
-                    $handler = new $handler($this->requests[$id], $response, $this->serializer);
-                }
+                $handler = $this->requests[$id]->getSuccessHandler();
+                $handler = new $handler($this->requests[$id], $response, $this->serializer);
             } elseif (str_starts_with((string)$response->getStatusCode(), '3')) {
                 $handler = $this->requests[$id]->getRedirectionHandler();
                 $handler = new $handler($this->requests[$id], $response);
