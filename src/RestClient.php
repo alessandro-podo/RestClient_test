@@ -37,7 +37,6 @@ class RestClient implements RestClientInterface
         private CacheHelper         $cacheHelper
     )
     {
-        //TODO: Cachen
         //TODO: Recursive helper, sollte jedoch im endzustand im Handler gemacht werden(RecursiveSuccessHandler als Abstract?)
     }
 
