@@ -17,7 +17,6 @@ services:
     class: RestClient\Helper\CacheHelper
     arguments:
       $cache: '@cache.app'
-      $parameterBag: '@parameter_bag'
 
   restclient:
     class: RestClient\RestClient

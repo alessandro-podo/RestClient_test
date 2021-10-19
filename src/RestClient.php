@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace RestClient;
 
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\InvalidArgumentException;
 use RestClient\Dto\Http\Error;
 use RestClient\Dto\Request;
 use RestClient\Exceptions\MissingParameter;
@@ -24,6 +26,7 @@ class RestClient implements RestClientInterface
     private array $responses = [];
     private array $handledResponsesSuccess = [];
     private array $handledResponsesErrors = [];
+    private array $handledCachedResponsesSuccess = [];
 
     private bool $errors = false;
 
@@ -50,6 +53,7 @@ class RestClient implements RestClientInterface
     /**
      * @throws MissingParameter
      * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     public function sendRequests(): self
     {
@@ -57,9 +61,13 @@ class RestClient implements RestClientInterface
             throw new MissingParameter('There is no Request added');
         }
         foreach ($this->requests as $request) {
+            if ($request->isRefreshCache()) {
+                $this->cacheHelper->delete($request->getId());
+            }
             $this->receiveResponses($request);
         }
 
+        $this->handleCachedResponses();
         $this->handleResponses();
         return $this;
     }
@@ -81,9 +89,15 @@ class RestClient implements RestClientInterface
 
     /**
      * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
      */
     private function receiveResponses(Request $request): void
     {
+        //if Request in Cache, id dem resonsesCached Stack hinzufügen
+        if ($this->cacheHelper->isInCache($request->getId())) {
+            $this->handledCachedResponsesSuccess[$request->getId()] = $this->cacheHelper->getFromCache($request->getId());
+            return;
+        }
         $options = [];
         if ($request->getJson() !== null) {
             $options = array_merge($options, $request->getJson());
@@ -99,6 +113,17 @@ class RestClient implements RestClientInterface
         }
 
         $this->responses[$request->getId()] = $this->httpClient->request($request->getHttpMethod(), $request->getUrl(), $options);
+    }
+
+    private function handleCachedResponses(): void
+    {
+        //handledResponsesSuccess dem Stack hinzufügen
+        //TODO ist es ein Problem, dass die Request nicht in der gleichen Reihenfolge sind?
+        foreach ($this->handledCachedResponsesSuccess as $id => $cachedResponsesSuccess) {
+            $this->handledResponsesSuccess[$id] = $cachedResponsesSuccess;
+            $url = "From Cache: " . $this->requests[$id]->getUrl();
+            $this->loggerHelper->log($this->requests[$id]->setUrl($url), $cachedResponsesSuccess);
+        }
     }
 
     private function handleResponses(): void
@@ -134,7 +159,13 @@ class RestClient implements RestClientInterface
                 $this->handledResponsesErrors[$id] = $handler->getResult();
                 $this->errors = true;
             } else {
-                $this->handledResponsesSuccess[$id] = $handler->getResult();
+                //Result in/aus dem Cache
+                #$this->handledResponsesSuccess[$id] = $handler->getResult();
+                dump($id);
+                $this->handledResponsesSuccess[$id] = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $handler) {
+                    $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
+                    return $handler->getResult();
+                }, $this->requests[$id]->getCacheBeta());
             }
 
             $this->loggerHelper->log($this->requests[$id], $handler->getResult());

@@ -18,6 +18,7 @@ class Request
 
     private ?int $cacheExpiresAfter = null;
     private ?float $cacheBeta = null;
+    private bool $refreshCache = false;
 
     private ?array $auth_basic = null;
     private ?array $headers = null;
@@ -84,6 +85,17 @@ class Request
     public function setCacheBeta(?float $cacheBeta): Request
     {
         $this->cacheBeta = $cacheBeta;
+        return $this;
+    }
+
+    public function isRefreshCache(): bool
+    {
+        return $this->refreshCache;
+    }
+
+    public function setRefreshCache(bool $refreshCache): Request
+    {
+        $this->refreshCache = $refreshCache;
         return $this;
     }
 

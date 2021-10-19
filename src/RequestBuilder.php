@@ -43,6 +43,7 @@ class RequestBuilder implements RequestBuilderInterface
     private ValidatorInterface|RecursiveValidator $validator;
     private int $cacheExpiresAfter;
     private float $cacheBeta;
+    private bool $refreshCache = false;
 
     public function __construct(private ParameterBagInterface $parameterBag)
     {
@@ -53,6 +54,17 @@ class RequestBuilder implements RequestBuilderInterface
 
         $this->possibleTypes = (new \ReflectionClass(Type::class))->getConstants();
         $this->possibleHttpMethods = (new \ReflectionClass(HttpMethod::class))->getConstants();
+    }
+
+    private function isRefreshCache(): bool
+    {
+        return $this->refreshCache;
+    }
+
+    public function setRefreshCache(bool $refreshCache): RequestBuilder
+    {
+        $this->refreshCache = $refreshCache;
+        return $this;
     }
 
     /**
@@ -162,7 +174,8 @@ class RequestBuilder implements RequestBuilderInterface
             ->setUrl($this->getUrl())
             ->setCacheExpiresAfter($this->getCacheExpiresAfter())
             ->setCacheBeta($this->getCacheBeta())
-            ->setId($this->newRequestId());
+            ->setId($this->newRequestId())
+            ->setRefreshCache($this->isRefreshCache());
 
         $handler = $this->getHandlerFromHandlerAttribute();
         if ($handler !== null and $handler->getClientHandler() !== null) {
