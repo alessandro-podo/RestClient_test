@@ -1,10 +1,10 @@
 <?php
 
-namespace RestClient\Dto;
+namespace RestClient\Dto\Http;
 
 use RestClient\Interfaces\RestClientResponseInterface;
 
-class RestClientResponse extends RestClientResponseInterface
+class Success extends RestClientResponseInterface
 {
 
     private ?array $body;
@@ -14,7 +14,7 @@ class RestClientResponse extends RestClientResponseInterface
         return $this->body;
     }
 
-    public function setBody(?array $body): RestClientResponse
+    public function setBody(?array $body): Success
     {
         $this->body = $body;
         return $this;
