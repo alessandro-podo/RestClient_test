@@ -1,7 +1,8 @@
 <?php
 
-namespace RestClient\Maker;
+declare(strict_types=1);
 
+namespace RestClient\Maker;
 
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
@@ -18,10 +19,8 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-
 final class MakeRequestEntity extends AbstractMaker
 {
-
     private array $possibleConnections;
     private array $possibleMethods;
     private array $possibleTypes;
@@ -29,7 +28,7 @@ final class MakeRequestEntity extends AbstractMaker
 
     public function __construct(private ParameterBagInterface $parameterBag)
     {
-        $this->possibleConnections = array_keys($this->parameterBag->get("rest_client.connections"));
+        $this->possibleConnections = array_keys($this->parameterBag->get('rest_client.connections'));
         $this->possibleMethods = (new \ReflectionClass(HttpMethod::class))->getConstants();
         $this->possibleTypes = (new \ReflectionClass(Type::class))->getConstants();
     }
@@ -44,31 +43,31 @@ final class MakeRequestEntity extends AbstractMaker
         return 'Create a new Entity for a Rest Request';
     }
 
-    public function configureCommand(Command $command, InputConfiguration $inputConf)
+    public function configureCommand(Command $command, InputConfiguration $inputConf): void
     {
         $command
             ->addArgument('endpointUrl', InputArgument::REQUIRED, 'Wie ist die relative URL des Endpoints?')
             ->addArgument('apiEndpoint', InputArgument::OPTIONAL, 'Welchen Endpoint Betrifft es?')
             ->addArgument('apiMethod', InputArgument::OPTIONAL, 'Welche HTTP Methode soll verwendent werden?')
-            ->addOption('cacheExpiresAfter', ['cea'], InputOption::VALUE_OPTIONAL, 'Sekunden wie lange der Cache gültig sein soll für den Request', $this->parameterBag->get('rest_client.cache')["expiresAfter"])
-            ->addOption('cacheBeta', ['cb'], InputOption::VALUE_OPTIONAL, 'recompute for the Cache', $this->parameterBag->get('rest_client.cache')["beta"])
-            ->setHelp('Create a RequestEntity. If one Cache Parameter is set, the Attribute will be written and use default parameter from the Config');
+            ->addOption('cacheExpiresAfter', null, InputOption::VALUE_OPTIONAL, 'Sekunden wie lange der Cache gültig sein soll für den Request', $this->parameterBag->get('rest_client.cache')['expiresAfter'])
+            ->addOption('cacheBeta', null, InputOption::VALUE_OPTIONAL, 'recompute for the Cache', $this->parameterBag->get('rest_client.cache')['beta'])
+            ->setHelp('Create a RequestEntity. If one Cache Parameter is set, the Attribute will be written and use default parameter from the Config')
+        ;
 
         $inputConf->setArgumentAsNonInteractive('apiEndpoint');
         $inputConf->setArgumentAsNonInteractive('apiMethod');
     }
 
-    public function interact(InputInterface $input, ConsoleStyle $io, Command $command)
+    public function interact(InputInterface $input, ConsoleStyle $io, Command $command): void
     {
         if (null === $input->getArgument('apiMethod')) {
             $argument = $command->getDefinition()->getArgument('apiMethod');
 
-
             $question = new Question($argument->getDescription());
             $question->setValidator(function ($answer) {
-                if (!in_array($answer, $this->possibleMethods)) {
+                if (!\in_array($answer, $this->possibleMethods, true)) {
                     throw new \RuntimeException(
-                        'You must use one of these Methods ' . implode(',', $this->possibleMethods)
+                        'You must use one of these Methods '.implode(',', $this->possibleMethods)
                     );
                 }
 
@@ -85,9 +84,9 @@ final class MakeRequestEntity extends AbstractMaker
 
             $question = new Question($argument->getDescription());
             $question->setValidator(function ($answer) {
-                if (!in_array($answer, $this->possibleConnections)) {
+                if (!\in_array($answer, $this->possibleConnections, true)) {
                     throw new \RuntimeException(
-                        'You must use one of these Connections ' . implode(',', $this->possibleConnections) . ' or create a new Connection in the ConfigFile'
+                        'You must use one of these Connections '.implode(',', $this->possibleConnections).' or create a new Connection in the ConfigFile'
                     );
                 }
 
@@ -147,23 +146,24 @@ final class MakeRequestEntity extends AbstractMaker
         }
     }
 
-
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
     {
         $endpointUrl = $input->getArgument('endpointUrl');
         $apiEndpoint = $input->getArgument('apiEndpoint');
-        $apiMethod = strtoupper($input->getArgument('apiMethod'));
+        $apiMethod = mb_strtoupper($input->getArgument('apiMethod'));
         $cacheBeta = $input->getOption('cacheBeta');
         $cacheExpiresAfter = $input->getOption('cacheExpiresAfter');
 
-        $cacheIsSet = (!is_bool($input->getParameterOption('--cacheBeta')) or !is_bool($input->getParameterOption('--cacheExpiresAfter')));
+        $cacheIsSet = (!\is_bool($input->getParameterOption('--cacheBeta')) || !\is_bool($input->getParameterOption('--cacheExpiresAfter')));
 
-        if (!in_array($apiMethod, $this->possibleMethods)) {
-            $io->error('You must use one of these Methods ' . implode(',', $this->possibleMethods));
+        if (!\in_array($apiMethod, $this->possibleMethods, true)) {
+            $io->error('You must use one of these Methods '.implode(',', $this->possibleMethods));
+
             return Command::FAILURE;
         }
-        if (!in_array($apiEndpoint, $this->possibleConnections)) {
-            $io->error('You must use one of these Connections ' . implode(',', $this->possibleConnections));
+        if (!\in_array($apiEndpoint, $this->possibleConnections, true)) {
+            $io->error('You must use one of these Connections '.implode(',', $this->possibleConnections));
+
             return Command::FAILURE;
         }
 
@@ -171,30 +171,31 @@ final class MakeRequestEntity extends AbstractMaker
             $this->splitUrl($endpointUrl);
         } catch (\Throwable $throwable) {
             $io->error($throwable->getMessage());
+
             return Command::FAILURE;
         }
 
         $splitedUrlParts = $this->splitUrl($endpointUrl);
 
         $formClassNameDetailsEntity = $generator->createClassNameDetails(
-            ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
+            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
             'Request'
         );
         $formClassNameDetailsDto = $generator->createClassNameDetails(
-            ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
+            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
             'Dto'
         );
         $formClassNameDetailsSuccessHandler = $generator->createClassNameDetails(
-            ucfirst(strtolower($apiMethod)) . implode("", $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix') . '\\' . implode("\\", $splitedUrlParts['forClassName']),
+            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
             'SuccessHandler'
         );
 
         $generator->generateClass(
             $formClassNameDetailsEntity->getFullName(),
-            __DIR__ . '/../Resources/skeleton/makeRequestEntity.tpl.php',
+            __DIR__.'/../Resources/skeleton/makeRequestEntity.tpl.php',
             [
                 'endpoint' => $apiEndpoint,
                 'method' => $apiMethod,
@@ -203,31 +204,34 @@ final class MakeRequestEntity extends AbstractMaker
                 'cacheIsSet' => $cacheIsSet,
                 'properties' => $this->fields,
                 'url' => $endpointUrl,
-                'successHandler' => $formClassNameDetailsSuccessHandler->getRelativeName()
+                'successHandler' => $formClassNameDetailsSuccessHandler->getRelativeName(),
             ]
         );
 
         //SuccessHandler
         $generator->generateClass(
             $formClassNameDetailsSuccessHandler->getFullName(),
-            __DIR__ . '/../Resources/skeleton/makeSuccessHandler.tpl.php',
+            __DIR__.'/../Resources/skeleton/makeSuccessHandler.tpl.php',
             [
-                'dtoName' => $formClassNameDetailsDto->getRelativeName()
+                'dtoName' => $formClassNameDetailsDto->getRelativeName(),
             ]
         );
 
         //dto
         $generator->generateClass(
             $formClassNameDetailsDto->getFullName(),
-            __DIR__ . '/../Resources/skeleton/makeDto.tpl.php',
+            __DIR__.'/../Resources/skeleton/makeDto.tpl.php',
             []
         );
-
 
         $generator->writeChanges();
         $this->writeSuccessMessage($io);
 
         return Command::SUCCESS;
+    }
+
+    public function configureDependencies(DependencyBuilder $dependencies): void
+    {
     }
 
     private function splitUrl(string $url): array
@@ -236,13 +240,13 @@ final class MakeRequestEntity extends AbstractMaker
         $splitUrl = [];
 
         foreach ($splitUrlParts as $splitUrlPart) {
-            if (strlen($splitUrlPart) > 0 and !str_starts_with($splitUrlPart, "{") and !str_ends_with($splitUrlPart, "}")) {
-                $splitUrl["likeInput"][] = $splitUrlPart;
-                $splitUrl["forClassName"][] = ucfirst(strtolower($splitUrlPart));
+            if (\mb_strlen($splitUrlPart) > 0 && !str_starts_with($splitUrlPart, '{') && !str_ends_with($splitUrlPart, '}')) {
+                $splitUrl['likeInput'][] = $splitUrlPart;
+                $splitUrl['forClassName'][] = ucfirst(mb_strtolower($splitUrlPart));
             }
         }
 
-        if (count($splitUrl) === 0) {
+        if (0 === \count($splitUrl)) {
             throw new \RuntimeException(sprintf('Url can not be splited %s ', $url));
         }
 
@@ -255,66 +259,72 @@ final class MakeRequestEntity extends AbstractMaker
 
         $question = (new Question('Wie soll das Feld genannt werden? (leerlassen zum beenden)'))
             ->setValidator(function ($answer) {
-                if (array_key_exists($answer, $this->fields)) {
+                if (\array_key_exists($answer, $this->fields)) {
                     throw new \RuntimeException('This Property is already set');
                 }
+
                 return $answer;
-            });
+            })
+        ;
         $feldName = $io->askQuestion($question);
 
-        if ($feldName === null) {
+        if (null === $feldName) {
             return null;
         }
 
         $phpTypes = ['string', 'int', 'float', 'array'];
-        $question = (new Question('Welchen PhpTyp soll das Feld ' . $feldName . ' haben?'))
+        $question = (new Question('Welchen PhpTyp soll das Feld '.$feldName.' haben?'))
             ->setValidator(function ($answer) use ($phpTypes) {
-                if (!in_array($answer, $phpTypes)) {
+                if (!\in_array($answer, $phpTypes, true)) {
                     throw new \RuntimeException(
-                        'You must use one of these Types ' . implode(',', $phpTypes)
+                        'You must use one of these Types '.implode(',', $phpTypes)
                     );
                 }
 
                 return $answer;
             })
             ->setAutocompleterValues($phpTypes)
-            ->setMaxAttempts(3);
+            ->setMaxAttempts(3)
+        ;
         $phpTyp = $io->askQuestion($question);
 
-        $question = (new Question('Welchen RequestTyp soll das Feld ' . $feldName . ' haben?'))
+        $question = (new Question('Welchen RequestTyp soll das Feld '.$feldName.' haben?'))
             ->setValidator(function ($answer) {
-                if (!in_array($answer, $this->possibleTypes)) {
+                if (!\in_array($answer, $this->possibleTypes, true)) {
                     throw new \RuntimeException(
-                        'You must use one of these Types ' . implode(',', $this->possibleTypes)
+                        'You must use one of these Types '.implode(',', $this->possibleTypes)
                     );
                 }
 
                 return $answer;
             })
             ->setAutocompleterValues($this->possibleTypes)
-            ->setMaxAttempts(3);
+            ->setMaxAttempts(3)
+        ;
         $type = $io->askQuestion($question);
 
-        $question = (new ConfirmationQuestion('Is ' . $feldName . ' required?', false));
+        $question = (new ConfirmationQuestion('Is '.$feldName.' required?', false));
         $required = $io->askQuestion($question);
 
         $allowedValuesString = null;
-        if ($phpTyp === 'array') {
+        if ('array' === $phpTyp) {
             $question = (new Question('Welche Werte sollen zulässig sein. (Auswahl kommasepertiert,leer für alles)'))
                 ->setValidator(function ($answer) {
-                    if (strlen($answer) === 0) {
+                    if (0 === \mb_strlen($answer)) {
                         return null;
                     }
-                    return explode(",", $answer);
+
+                    return explode(',', $answer);
                 })
-                ->setMaxAttempts(3);
+                ->setMaxAttempts(3)
+            ;
             $allowedValues = $io->askQuestion($question);
 
-            $allowedValuesString = "";
+            $allowedValuesString = '';
             foreach ($allowedValues as $allowedValue) {
-                $allowedValuesString .= "'" . trim($allowedValue) . "',";
+                $allowedValuesString .= "'".trim($allowedValue)."',";
             }
-            $allowedValuesString = substr($allowedValuesString, 0, -1);
+            $allowedValuesString = mb_substr($allowedValuesString, 0, -1);
         }
 
         return [
@@ -322,13 +332,7 @@ final class MakeRequestEntity extends AbstractMaker
             'name' => $feldName,
             'phpType' => $phpTyp,
             'required' => $required,
-            'allowedValuesString' => $allowedValuesString
+            'allowedValuesString' => $allowedValuesString,
         ];
-    }
-
-
-    public function configureDependencies(DependencyBuilder $dependencies)
-    {
-
     }
 }

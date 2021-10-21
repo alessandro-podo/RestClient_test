@@ -1,10 +1,10 @@
-<?= "<?php\n" ?>
+<?php echo "<?php\n"; ?>
 
 declare(strict_types=1);
 
-namespace <?= $namespace ?>;
+namespace <?php echo $namespace; ?>;
 
-class <?= $class_name ?> extends RestClientResponseInterface
+class <?php echo $class_name; ?> extends RestClientResponseInterface
 {
 
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Attribute;
 
 use Attribute;
@@ -13,8 +15,7 @@ class Handler
         private ?string $redirectionHandler = null,
         private ?string $clientHandler = null,
         private ?string $serverHandler = null
-    )
-    {
+    ) {
     }
 
     public function getInformationalHandler(): ?string
@@ -41,5 +42,4 @@ class Handler
     {
         return $this->serverHandler;
     }
-
 }

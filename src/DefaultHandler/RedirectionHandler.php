@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\DefaultHandler;
 
 use RestClient\Dto\Http\Error;
@@ -8,7 +10,6 @@ use RestClient\Interfaces\HandlerInterface;
 
 class RedirectionHandler extends HandlerInterface
 {
-
     public function getResult(): Error
     {
         try {

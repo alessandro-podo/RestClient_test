@@ -1,7 +1,8 @@
 <?php
 
-namespace RestClient\Interfaces;
+declare(strict_types=1);
 
+namespace RestClient\Interfaces;
 
 use RestClient\Dto\Request;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -15,7 +16,6 @@ abstract class HandlerInterface
     }
 
     abstract public function getResult(): RestClientResponseInterface;
-
 
     /**
      * @throws TransportExceptionInterface

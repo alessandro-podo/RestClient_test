@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Interfaces;
 
 abstract class RestClientResponseInterface
@@ -14,6 +16,7 @@ abstract class RestClientResponseInterface
     public function setStatusCode(int $statusCode): self
     {
         $this->statusCode = $statusCode;
+
         return $this;
     }
 }

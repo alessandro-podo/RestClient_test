@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Dto\Http;
 
 use RestClient\Dto\Request;
@@ -8,7 +10,6 @@ use Throwable;
 
 class Error extends RestClientResponseInterface
 {
-
     public function __construct(private string $message, private int $code, private Request $request, private Throwable $previous)
     {
     }
@@ -32,6 +33,4 @@ class Error extends RestClientResponseInterface
     {
         return $this->previous;
     }
-
-
 }

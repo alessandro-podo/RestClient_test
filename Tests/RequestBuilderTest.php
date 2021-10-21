@@ -31,7 +31,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 final class RequestBuilderTest extends TestCase
 {
     /**
-     * @var mixed|\PHPUnit\Framework\MockObject\MockObject|ParameterBag
+     * @var mixed|ParameterBag|\PHPUnit\Framework\MockObject\MockObject
      */
     private mixed $parameterBag;
 
@@ -69,6 +69,18 @@ final class RequestBuilderTest extends TestCase
 
     /**
      * @dataProvider entities
+     *
+     * @param mixed $entity
+     * @param mixed $authentication
+     * @param mixed $addHeaders
+     * @param mixed $assertion
+     * @param mixed $headers
+     * @param mixed $json
+     * @param mixed $httpMethod
+     * @param mixed $query
+     * @param mixed $url
+     * @param mixed $authBasic
+     * @param mixed $parameterBagReturn
      */
     public function testGetRequest($entity, $authentication, $addHeaders, $assertion, $headers, $json, $httpMethod, $query, $url, $authBasic, $parameterBagReturn): void
     {
@@ -76,7 +88,7 @@ final class RequestBuilderTest extends TestCase
             #->method('get')->willReturn($parameterBagReturn);
             ->method('get')->willReturnMap($parameterBagReturn);
 
-        if (is_string($assertion) and class_exists($assertion)) {
+        if (\is_string($assertion) && class_exists($assertion)) {
             $this->expectException($assertion);
         }
 
@@ -102,7 +114,7 @@ final class RequestBuilderTest extends TestCase
         //RequestBuilder
         $request = $requestBuilder->setEntity($entity)->getRequest();
 
-        if (is_null($assertion) or !class_exists($assertion)) {
+        if (null === $assertion || !class_exists($assertion)) {
             static::assertEqualsCanonicalizing($headers, $request->getHeaders());
             static::assertEqualsCanonicalizing($json, $request->getJson());
             static::assertEqualsCanonicalizing($httpMethod, $request->getHttpMethod());
@@ -115,56 +127,57 @@ final class RequestBuilderTest extends TestCase
     public function entities()
     {
         $parameterBag = [
-            "badEndpoint1" => [
+            'badEndpoint1' => [
                 'rest_client.connections' => [
-                    "badEndpoint1" => [
-                        "url" => 'https://google.de',
-                    ]
+                    'badEndpoint1' => [
+                        'url' => 'https://google.de',
+                    ],
                 ],
                 'rest_client.cache' => [
-                    "expiresAfter" => 1,
-                    "beta" => 1.0
-                ]
+                    'expiresAfter' => 1,
+                    'beta' => 1.0,
+                ],
             ],
-            "badEndpoint2" => [
+            'badEndpoint2' => [
                 'rest_client.connections' => [
-                    "badEndpoint2" => [
-                        "url" => 'https://google.de',
-                        "username" => "user",
-                        "password" => null
-                    ]
-                ]
+                    'badEndpoint2' => [
+                        'url' => 'https://google.de',
+                        'username' => 'user',
+                        'password' => null,
+                    ],
+                ],
             ],
-            "badEndpoint3" => [
+            'badEndpoint3' => [
                 'rest_client.connections' => [
-                    "badEndpoint3" => [
-                        "url" => 'https://google.de',
-                        "username" => "user",
-                        "password" => "pass",
-                        "keyField" => "field",
-                        "keyValue" => "value"
-                    ]
-                ]
+                    'badEndpoint3' => [
+                        'url' => 'https://google.de',
+                        'username' => 'user',
+                        'password' => 'pass',
+                        'keyField' => 'field',
+                        'keyValue' => 'value',
+                    ],
+                ],
             ],
-            "okEndpoint1" => [
+            'okEndpoint1' => [
                 'rest_client.connections' => [
-                    "okEndpoint1" => [
-                        "url" => 'https://google.de',
-                        "username" => "user",
-                        "password" => "pass",
-                    ]
-                ]
+                    'okEndpoint1' => [
+                        'url' => 'https://google.de',
+                        'username' => 'user',
+                        'password' => 'pass',
+                    ],
+                ],
             ],
-            "okEndpoint2" => [
+            'okEndpoint2' => [
                 'rest_client.connections' => [
-                    "okEndpoint2" => [
-                        "url" => 'https://google.de',
-                        "keyField" => "field",
-                        "keyValue" => "value"
-                    ]
-                ]
+                    'okEndpoint2' => [
+                        'url' => 'https://google.de',
+                        'keyField' => 'field',
+                        'keyValue' => 'value',
+                    ],
+                ],
             ],
         ];
+
         return [
             'EntityMissingId' => [
                 'Entity' => new EntityOKTokenAuthenticator(),
@@ -177,7 +190,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => null,
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityOKTokenAuthenticator' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -190,7 +203,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityOKTokenAuthenticatorWithExtraTokenAuthenticator' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -203,7 +216,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityOKBasicAuthenticator' => [
                 'Entity' => (new EntityOKBasicAuthenticator())->setId(12),
@@ -216,7 +229,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => ['auth_basic' => ['api', 'jjjjj']],
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityOKTokenAuthenticatorWithExtraHeader' => [
                 'Entity' => (new EntityOKTokenAuthenticator())->setId(12),
@@ -229,7 +242,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityMissingMethod' => [
                 'Entity' => (new EntityMissingMethod())->setId(12),
@@ -242,7 +255,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityWrongMethod' => [
                 'Entity' => (new EntityWrongMethod())->setId(12),
@@ -255,7 +268,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityMissingAuthenticator' => [
                 'Entity' => (new EntityMissingAuthenticator())->setId(12),
@@ -268,7 +281,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityMissingAuthenticatorOk' => [
                 'Entity' => (new EntityMissingAuthenticator())->setId(12),
@@ -281,7 +294,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => []
+                'parameterBagReturn' => [],
             ],
             'EntityWrongApiEndpoint' => [
                 'Entity' => (new EntityWrongApiEndpoint())->setId(12),
@@ -294,7 +307,7 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
             'EntityOKApiEndpoint1' => [
                 'Entity' => (new EntityOKApiEndpoint1())->setId(12),
@@ -307,59 +320,59 @@ final class RequestBuilderTest extends TestCase
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => ['auth_basic' => ['user', 'pass']],
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
             'EntityOKApiEndpoint2' => [
                 'Entity' => (new EntityOKApiEndpoint2())->setId(12),
                 'Authentication' => null,
                 'addHeader' => null,
                 'assertion' => null,
-                'headers' => ['headers' => ['field' => 'value',]],
+                'headers' => ['headers' => ['field' => 'value']],
                 'json' => ['json' => ['id' => 12]],
                 'httpMethod' => 'GET',
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
             'EntityBadApiEndpoint1' => [
                 'Entity' => (new EntityBadApiEndpoint1())->setId(12),
                 'Authentication' => null,
                 'addHeader' => null,
                 'assertion' => MissingParameter::class,
-                'headers' => ['headers' => ['field' => 'value',]],
+                'headers' => ['headers' => ['field' => 'value']],
                 'json' => ['json' => ['id' => 12]],
                 'httpMethod' => 'GET',
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
             'EntityBadApiEndpoint2' => [
                 'Entity' => (new EntityBadApiEndpoint2())->setId(12),
                 'Authentication' => null,
                 'addHeader' => null,
                 'assertion' => MissingParameter::class,
-                'headers' => ['headers' => ['field' => 'value',]],
+                'headers' => ['headers' => ['field' => 'value']],
                 'json' => ['json' => ['id' => 12]],
                 'httpMethod' => 'GET',
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
             'EntityBadApiEndpoint3' => [
                 'Entity' => (new EntityBadApiEndpoint3())->setId(12),
                 'Authentication' => null,
                 'addHeader' => null,
                 'assertion' => WrongParameter::class,
-                'headers' => ['headers' => ['field' => 'value',]],
+                'headers' => ['headers' => ['field' => 'value']],
                 'json' => ['json' => ['id' => 12]],
                 'httpMethod' => 'GET',
                 'query' => null,
                 'url' => 'https://google.de',
                 'authBasic' => null,
-                'parameterBagReturn' => $parameterBag
+                'parameterBagReturn' => $parameterBag,
             ],
         ];
     }

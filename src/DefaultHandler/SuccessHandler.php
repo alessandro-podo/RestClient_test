@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\DefaultHandler;
 
 use RestClient\Dto\Http\Success;
@@ -16,5 +18,4 @@ class SuccessHandler extends HandlerInterface
             return (new Success())->setBody(null)->setStatusCode($this->response->getStatusCode());
         }
     }
-
 }

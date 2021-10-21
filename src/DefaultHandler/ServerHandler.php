@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\DefaultHandler;
 
 use RestClient\Dto\Http\Error;

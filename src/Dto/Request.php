@@ -60,9 +60,10 @@ class Request
         return $this->id;
     }
 
-    public function setId(string $id): Request
+    public function setId(string $id): self
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -71,9 +72,10 @@ class Request
         return $this->cacheExpiresAfter;
     }
 
-    public function setCacheExpiresAfter(?int $cacheExpiresAfter): Request
+    public function setCacheExpiresAfter(?int $cacheExpiresAfter): self
     {
         $this->cacheExpiresAfter = $cacheExpiresAfter;
+
         return $this;
     }
 
@@ -82,9 +84,10 @@ class Request
         return $this->cacheBeta;
     }
 
-    public function setCacheBeta(?float $cacheBeta): Request
+    public function setCacheBeta(?float $cacheBeta): self
     {
         $this->cacheBeta = $cacheBeta;
+
         return $this;
     }
 
@@ -93,9 +96,10 @@ class Request
         return $this->refreshCache;
     }
 
-    public function setRefreshCache(bool $refreshCache): Request
+    public function setRefreshCache(bool $refreshCache): self
     {
         $this->refreshCache = $refreshCache;
+
         return $this;
     }
 
@@ -182,9 +186,10 @@ class Request
         return $this->informationalHandler;
     }
 
-    public function setInformationalHandler(string $informationalHandler): Request
+    public function setInformationalHandler(string $informationalHandler): self
     {
         $this->informationalHandler = $informationalHandler;
+
         return $this;
     }
 
@@ -193,9 +198,10 @@ class Request
         return $this->successHandler;
     }
 
-    public function setSuccessHandler(string $successHandler): Request
+    public function setSuccessHandler(string $successHandler): self
     {
         $this->successHandler = $successHandler;
+
         return $this;
     }
 
@@ -204,9 +210,10 @@ class Request
         return $this->redirectionHandler;
     }
 
-    public function setRedirectionHandler(string $redirectionHandler): Request
+    public function setRedirectionHandler(string $redirectionHandler): self
     {
         $this->redirectionHandler = $redirectionHandler;
+
         return $this;
     }
 
@@ -215,9 +222,10 @@ class Request
         return $this->clientHandler;
     }
 
-    public function setClientHandler(string $clientHandler): Request
+    public function setClientHandler(string $clientHandler): self
     {
         $this->clientHandler = $clientHandler;
+
         return $this;
     }
 
@@ -226,11 +234,10 @@ class Request
         return $this->serverHandler;
     }
 
-    public function setServerHandler(string $serverHandler): Request
+    public function setServerHandler(string $serverHandler): self
     {
         $this->serverHandler = $serverHandler;
+
         return $this;
     }
-
-
 }

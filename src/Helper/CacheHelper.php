@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Helper;
 
 use Psr\Cache\InvalidArgumentException;
@@ -8,9 +10,8 @@ use Symfony\Contracts\Cache\CacheInterface;
 class CacheHelper
 {
     public function __construct(
-        private CacheInterface        $cache,
-    )
-    {
+        private CacheInterface $cache,
+    ) {
     }
 
     /**
@@ -29,9 +30,8 @@ class CacheHelper
         if (!$this->isInCache($id)) {
             return null;
         }
-        return $this->get($id, function () {
-            return null;
-        }, null);
+
+        return $this->get($id, fn () => null, null);
     }
 
     public function isInCache(string $key): bool

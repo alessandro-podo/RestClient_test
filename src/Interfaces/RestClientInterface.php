@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace RestClient\Interfaces;
 
 use RestClient\Dto\Request;
@@ -10,7 +12,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 interface RestClientInterface
 {
-
     public function __construct(HttpClientInterface $httpClient, SerializerInterface $serializer, LoggerHelper $loggerHelper, CacheHelper $cacheHelper);
 
     public function addRequest(Request $request);

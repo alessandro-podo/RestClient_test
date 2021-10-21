@@ -1,17 +1,17 @@
-<?= "<?php\n" ?>
+<?php echo "<?php\n"; ?>
 
 declare(strict_types=1);
 
-namespace <?= $namespace ?>;
+namespace <?php echo $namespace; ?>;
 
 use RestClient\DefaultHandler\SuccessHandler;
 
-class <?= $class_name ?> extends SuccessHandler
+class <?php echo $class_name; ?> extends SuccessHandler
 {
-public function getResult(): <?= $dtoName ?>
+public function getResult(): <?php echo $dtoName; ?>
 {
 try {
-return $this->serializer->denormalize($this->response->toArray(), <?= $dtoName ?>::class)->setStatusCode($this->response->getStatusCode());
+return $this->serializer->denormalize($this->response->toArray(), <?php echo $dtoName; ?>::class)->setStatusCode($this->response->getStatusCode());
 } catch (\Throwable $throwable) {
 
 }
