@@ -1,3 +1,8 @@
+# Offene ToDos:
+
+* Unit Tests schreiben
+* RecursivHandler abstrakt schreiben
+
 # Hinzufügen vom Configfile:
 
 ~~~yaml
