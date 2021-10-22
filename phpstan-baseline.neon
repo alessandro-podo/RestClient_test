@@ -1,6 +1,21 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Method RestClient\\\\DefaultHandler\\\\ClientHandler\\:\\:getResult\\(\\) should return RestClient\\\\Dto\\\\Http\\\\Error but returns RestClient\\\\Interfaces\\\\RestClientResponseInterface\\.$#"
+			count: 1
+			path: src/DefaultHandler/ClientHandler.php
+
+		-
+			message: "#^Method RestClient\\\\DefaultHandler\\\\RedirectionHandler\\:\\:getResult\\(\\) should return RestClient\\\\Dto\\\\Http\\\\Error but returns RestClient\\\\Interfaces\\\\RestClientResponseInterface\\.$#"
+			count: 1
+			path: src/DefaultHandler/RedirectionHandler.php
+
+		-
+			message: "#^Method RestClient\\\\DefaultHandler\\\\ServerHandler\\:\\:getResult\\(\\) should return RestClient\\\\Dto\\\\Http\\\\Error but returns RestClient\\\\Interfaces\\\\RestClientResponseInterface\\.$#"
+			count: 1
+			path: src/DefaultHandler/ServerHandler.php
+
+		-
 			message: "#^Call to an undefined method Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeDefinition\\:\\:children\\(\\)\\.$#"
 			count: 1
 			path: src/DependencyInjection/Configuration.php
