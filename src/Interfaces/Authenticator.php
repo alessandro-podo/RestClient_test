@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RestClient\Interfaces;
 
-#[\Attribute(\Attribute::TARGET_CLASS)]
 interface Authenticator
 {
     public function __construct(string $username, string $password);

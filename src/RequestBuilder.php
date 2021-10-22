@@ -511,19 +511,17 @@ class RequestBuilder implements RequestBuilderInterface
 
     private function reset(): void
     {
-        $this->authentication = null;
-        $this->url = null;
-        $this->method = null;
-        $this->entity = null;
+        unset($this->authentication);
+        unset($this->entity);
 
         $this->headers = [];
         $this->query = [];
         $this->json = [];
 
-        $this->reflectEntity = null;
+        unset($this->reflectEntity);
 
-        $this->cacheExpiresAfter = null;
-        $this->cacheBeta = null;
+        unset($this->cacheExpiresAfter);
+        unset($this->cacheBeta);
 
         $this->request = null;
     }

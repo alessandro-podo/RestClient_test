@@ -1,7 +1,9 @@
 parameters:
-    level: 8
+    level: 2
     paths:
         - src
+    excludePaths:
+        - src/Resources/skeleton/
 
 includes:
     - phpstan-baseline.neon

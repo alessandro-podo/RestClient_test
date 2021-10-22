@@ -4,12 +4,6 @@ declare(strict_types=1);
 //.php_cs.dist
 $finder = PhpCsFixer\Finder::create()
     ->exclude('vendor')
-    ->exclude('var')
-    ->exclude('config')
-    ->exclude('build')
-    ->exclude('migrations')
-    ->notPath('src/Kernel.php')
-    ->notPath('public/index.php')
     ->in(__DIR__)
     ->name('*.php')
     ->ignoreDotFiles(true);
@@ -31,7 +25,7 @@ return (new PhpCsFixer\Config())
         'RemoveDebugStatements/dump' => true,
         'single_line_comment_style' => false,
         'phpdoc_to_comment' => false,
-        'strict_comparison' => false, #weil es auch an den Stellen auf === stellt, wo es falsch ist
+        'strict_comparison' => true,
     ])
     ->registerCustomFixers([new Drew\DebugStatementsFixers\Dump()])
     ->setRiskyAllowed(true)
