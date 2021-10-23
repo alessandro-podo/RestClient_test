@@ -6,6 +6,7 @@ namespace RestClient\Helper;
 
 use Psr\Log\LoggerInterface;
 use RestClient\Dto\Request;
+use RestClient\Exceptions\MissingParameter;
 use RestClient\Interfaces\RestClientResponseInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -25,6 +26,9 @@ class LoggerHelper
         $this->logLevel = $this->parameterBag->get('rest_client.logging')['loglevel'];
     }
 
+    /**
+     * @throws MissingParameter
+     */
     public function log(Request $request, RestClientResponseInterface $response): void
     {
         if (!$this->loggen) {
@@ -49,8 +53,14 @@ class LoggerHelper
         return $this;
     }
 
+    /**
+     * @throws MissingParameter
+     */
     private function sendLog(array $request, array $response): void
     {
+        if(!isset($response['statusCode'])){
+            throw new MissingParameter('The Parameter statusCode is not anymore set');
+        }
         $loglevel = mb_substr((string)$response['statusCode'], 0, 1).'xx';
         $this->logger->log($this->logLevel[$loglevel], '('.$response['statusCode'].') '.$request['url'], [
             'request' => $request,

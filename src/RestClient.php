@@ -129,6 +129,9 @@ class RestClient implements RestClientInterface
         $this->responses[$request->getId()] = $this->httpClient->request($request->getHttpMethod(), $request->getUrl(), $options);
     }
 
+    /**
+     * @throws MissingParameter
+     */
     private function handleCachedResponses(): void
     {
         //handledResponsesSuccess dem Stack hinzufügen
@@ -140,6 +143,11 @@ class RestClient implements RestClientInterface
         }
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws MissingParameter
+     */
     private function handleResponses(): void
     {
         foreach ($this->responses as $id => $response) {
@@ -173,8 +181,6 @@ class RestClient implements RestClientInterface
                 $this->handledResponsesErrors[$id] = $handler->getResult();
                 $this->errors = true;
             } else {
-                //Result in/aus dem Cache
-                #$this->handledResponsesSuccess[$id] = $handler->getResult();
                 $this->handledResponsesSuccess[$id] = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $handler) {
                     $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
 
