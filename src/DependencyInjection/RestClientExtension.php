@@ -6,7 +6,9 @@ namespace RestClient\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 
 class RestClientExtension extends \Symfony\Component\DependencyInjection\Extension\Extension
 {
@@ -23,6 +25,13 @@ class RestClientExtension extends \Symfony\Component\DependencyInjection\Extensi
 
         foreach ($config as $key => $value) {
             $container->setParameter('rest_client.'.$key, $value);
+        }
+
+        if(isset($config["logger"])){
+            $container->getDefinition('helper.logger')->setArgument('$logger',new Reference($config["logger"],ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE));
+        }
+        if(isset($config["cacher"])){
+            $container->getDefinition('helper.cache')->setArgument('$cache',new Reference($config["cacher"],ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE));
         }
     }
 

@@ -9,7 +9,7 @@ services:
   helper.logger:
     class: RestClient\Helper\LoggerHelper
     arguments:
-      $logger: '@monolog.logger.restClient'
+      $logger: '@monolog.logger'
       $serializer: '@serializer'
       $parameterBag: '@parameter_bag'
 

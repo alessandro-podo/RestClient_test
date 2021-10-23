@@ -16,6 +16,8 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
         $treeBuilder = new TreeBuilder('rest_client');
         $treeBuilder->getRootNode()
             ->children()
+            ->scalarNode('logger')->defaultValue('monolog.logger')->end()
+            ->scalarNode('cacher')->defaultValue('cache.app')->end()
             ->scalarNode('namespacePräfix')->defaultValue('RestClient')->end()
             ->arrayNode('logging')
             ->addDefaultsIfNotSet()
