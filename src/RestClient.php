@@ -177,18 +177,19 @@ class RestClient implements RestClientInterface
                 throw new \RuntimeException(sprintf('Handler ( %s ) must implement %s', \get_class($handler), HandlerInterface::class));
             }
 
-            if ($handler->getResult() instanceof Error) {
-                $this->handledResponsesErrors[$id] = $handler->getResult();
+            $handlerResult = $handler->getResult();
+            if ($handlerResult instanceof Error) {
+                $this->handledResponsesErrors[$id] = $handlerResult;
                 $this->errors = true;
             } else {
-                $this->handledResponsesSuccess[$id] = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $handler) {
+                $this->handledResponsesSuccess[$id] = $this->cacheHelper->get($id, function (CacheItemInterface $item) use ($id, $handlerResult) {
                     $item->expiresAfter($this->requests[$id]->getCacheExpiresAfter());
 
-                    return $handler->getResult();
+                    return $handlerResult;
                 }, $this->requests[$id]->getCacheBeta());
             }
 
-            $this->loggerHelper->log($this->requests[$id], $handler->getResult());
+            $this->loggerHelper->log($this->requests[$id], $handlerResult);
         }
     }
 }
