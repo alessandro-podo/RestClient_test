@@ -6,6 +6,7 @@ namespace RestClient\Maker;
 
 use RestClient\Attribute\HttpMethod;
 use RestClient\Attribute\Type;
+use RuntimeException;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
 use Symfony\Bundle\MakerBundle\Generator;
@@ -146,6 +147,9 @@ final class MakeRequestEntity extends AbstractMaker
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
     {
         $endpointUrl = $input->getArgument('endpointUrl');
@@ -168,28 +172,32 @@ final class MakeRequestEntity extends AbstractMaker
         }
 
         try {
-            $this->splitUrl($endpointUrl);
+            $this->splitUrl($endpointUrl, $apiEndpoint);
         } catch (\Throwable $throwable) {
             $io->error($throwable->getMessage());
 
             return Command::FAILURE;
         }
 
-        $splitedUrlParts = $this->splitUrl($endpointUrl);
+        $splitedUrlParts = $this->splitUrl($endpointUrl, $apiEndpoint);
+
+        $uc_apiEndpoint = ucfirst(mb_strtolower($apiEndpoint));
+        $uc_apiMethod = ucfirst(mb_strtolower($apiMethod));
+        $classNameParts = $splitedUrlParts['forClassName'];
 
         $formClassNameDetailsEntity = $generator->createClassNameDetails(
-            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
+            $uc_apiEndpoint . $uc_apiMethod .implode('', $classNameParts),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'. $uc_apiEndpoint .'\\'.implode('\\', $classNameParts),
             'Request'
         );
         $formClassNameDetailsDto = $generator->createClassNameDetails(
-            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
+            $uc_apiEndpoint . $uc_apiMethod .implode('', $classNameParts),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'. $uc_apiEndpoint .'\\'.implode('\\', $classNameParts),
             'Dto'
         );
         $formClassNameDetailsSuccessHandler = $generator->createClassNameDetails(
-            ucfirst(mb_strtolower($apiMethod)).implode('', $splitedUrlParts['forClassName']),
-            $this->parameterBag->get('rest_client.namespacePräfix').'\\'.implode('\\', $splitedUrlParts['forClassName']),
+            $uc_apiEndpoint . $uc_apiMethod .implode('', $classNameParts),
+            $this->parameterBag->get('rest_client.namespacePräfix').'\\'. $uc_apiEndpoint .'\\'.implode('\\', $classNameParts),
             'SuccessHandler'
         );
 
@@ -234,20 +242,31 @@ final class MakeRequestEntity extends AbstractMaker
     {
     }
 
-    private function splitUrl(string $url): array
+    /**
+     * @throws RuntimeException
+     */
+    private function splitUrl(string $url, string $apiEndpoint): array
     {
+        $praefix = "";
+        if(isset($this->parameterBag->get('rest_client.connections')[$apiEndpoint]["urlPräfix"])){
+            $praefix = $this->parameterBag->get('rest_client.connections')[$apiEndpoint]["urlPräfix"];
+        }
+
+        $url = str_replace($praefix, "", $url);
         $splitUrlParts = explode('/', $url);
         $splitUrl = [];
 
         foreach ($splitUrlParts as $splitUrlPart) {
-            if (\mb_strlen($splitUrlPart) > 0 && !str_starts_with($splitUrlPart, '{') && !str_ends_with($splitUrlPart, '}')) {
+            if (\mb_strlen($splitUrlPart) > 0) {
                 $splitUrl['likeInput'][] = $splitUrlPart;
+                $splitUrlPart = str_replace("{","",$splitUrlPart);
+                $splitUrlPart = str_replace("}","",$splitUrlPart);
                 $splitUrl['forClassName'][] = ucfirst(mb_strtolower($splitUrlPart));
             }
         }
 
         if (0 === \count($splitUrl)) {
-            throw new \RuntimeException(sprintf('Url can not be splited %s ', $url));
+            throw new RuntimeException(sprintf('Url can not be splited %s ', $url));
         }
 
         return $splitUrl;

@@ -51,6 +51,7 @@ class Configuration implements \Symfony\Component\Config\Definition\Configuratio
             ->scalarNode('password')->end()
             ->scalarNode('keyField')->end()
             ->scalarNode('keyValue')->end()
+            ->scalarNode('urlPräfix')->end()
             ->end()
             ->end()
             ->end()
