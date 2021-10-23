@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace <?php echo $namespace; ?>;
 
-use RestClient\DefaultHandler\SuccessHandler;
+use RestClient\Interfaces\RestClientResponseInterface;
 
-class <?php echo $class_name; ?> extends SuccessHandler
+class <?php echo $class_name; ?> extends RestClientResponseInterface
 {
 public function getResult(): <?php echo $dtoName; ?>
 {
