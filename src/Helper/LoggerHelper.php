@@ -51,7 +51,7 @@ class LoggerHelper
 
     private function sendLog(array $request, array $response): void
     {
-        $loglevel = mb_substr($response['statusCode'], 0, 1).'xx';
+        $loglevel = mb_substr((string)$response['statusCode'], 0, 1).'xx';
         $this->logger->log($this->logLevel[$loglevel], '('.$response['statusCode'].') '.$request['url'], [
             'request' => $request,
             'response' => $response,
