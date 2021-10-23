@@ -19,9 +19,7 @@
   "require": {
     "php": "8.*",
     "symfony/serializer": "^5.3",
-    "symfony/var-exporter": "^5.3",
     "symfony/http-client": "^5.3",
-    "phpunit/phpunit": "^9.5",
     "symfony/validator": "^5.3",
     "doctrine/annotations": "^1.13",
     "symfony/cache": "^5.3",
@@ -45,6 +43,8 @@
     "symfony/yaml": "^5.3",
     "phpstan/phpstan": "^0.12.98",
     "drew/debug-statements-fixers": "0.4",
-    "friendsofphp/php-cs-fixer": "^v2.19.2"
+    "friendsofphp/php-cs-fixer": "^v2.19.2",
+    "symfony/var-exporter": "^5.3",
+    "phpunit/phpunit": "^9.5"
   }
 }
