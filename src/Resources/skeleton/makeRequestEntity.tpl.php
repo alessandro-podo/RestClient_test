@@ -13,6 +13,7 @@ use RestClient\Attribute\Type;
 use RestClient\Attribute\Handler;
 use RestClient\Attribute\Url;
 use Symfony\Component\Validator\Constraints as Assert;
+use <?php echo $namespace; ?>\<?php echo $successHandler; ?>;
 
 #[HttpMethod(HttpMethod::<?php echo $method; ?>)]
 #[ApiEndpoint('<?php echo $endpoint; ?>')]
